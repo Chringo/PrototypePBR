@@ -262,6 +262,8 @@ bool Engine::initialize(HWND* window)
 
 	fileLoader->loadFile("./BBF/knullaMer.BBF");
 
+	camera = new Camera(gDevice, gDeviceContext);
+
 	return true;
 }
 
@@ -328,6 +330,7 @@ void Engine::shutdown()
 	}
 
 	delete this->fileLoader;
+	delete this->camera;
 }
 
 ID3D11Device* Engine::getDevice()
@@ -343,7 +346,11 @@ ID3D11DeviceContext* Engine::getDeviceContext()
 
 void Engine::render()
 {
+	fileLoader->getModelVec()[0][0]->update(gDeviceContext);
+
 	//defpass first
+
+	//draw ze final pass
 	this->draw();
 }
 
@@ -367,6 +374,11 @@ void Engine::draw()
 	this->gDeviceContext->GSSetShader(nullptr, nullptr, 0);
 	this->gDeviceContext->PSSetShader(this->pixelShader, nullptr, 0);
 
+	ID3D11Buffer* vpBuffer = camera->getConstantBufferVP();
+	ID3D11Buffer* wBuffer = fileLoader->getModelVec()[0][0]->getConstantBufferW();
+
+	this->gDeviceContext->VSSetConstantBuffers(0, 1, &wBuffer);
+	this->gDeviceContext->VSSetConstantBuffers(1, 1, &vpBuffer);
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;

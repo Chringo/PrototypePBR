@@ -10,23 +10,31 @@ The model class has everything in local space
 class Model
 {
 private:
+	struct worldMat
+	{
+		DirectX::XMFLOAT4X4 world;
+	};
+
+	worldMat wm;
+
 	DirectX::XMMATRIX worldMatrix;
 	std::vector<Vertex1>vertexData1;
 
 	std::vector<Mesh> Meshes;
+	ID3D11Buffer* cbW;
 	ID3D11Buffer* vertexBuffer;
 
-public:
+	void map(ID3D11DeviceContext* gDeviceContext);
 	Model();
+public:
+	Model(ID3D11Device* gDevice);
 	virtual ~Model();
 
-	void generateTriangle();
-	void initializeTriangle(ID3D11Device* gDevice, ID3D11DeviceContext* gDeviceContext, const DirectX::XMFLOAT3& pos);
-
 	void appendMesh(meshDesc & mDesc);
+	void update(ID3D11DeviceContext* gDeviceContext);
 
 	ID3D11Buffer* getVertexBuffer() const;
-	DirectX::XMMATRIX getWorldModel() const;
+	ID3D11Buffer* getConstantBufferW() const;
 
 	void shutdown();
 

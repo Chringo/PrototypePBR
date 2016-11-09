@@ -10,7 +10,7 @@ public:
 	~Mesh();
 
 	ID3D11Buffer * getVertexBuffer() const;
-	ID3D11Buffer * getindexBuffer() const;
+	ID3D11Buffer * getIndexBuffer() const;
 private:
 	Vertex * vertexData;
 	Index * indexData;

@@ -2,6 +2,7 @@
 #include <windows.h>
 #include"GlobalData.h"
 #include "FileLoader.h"
+#include "Camera.h"
 
 class Engine
 {
@@ -33,6 +34,8 @@ private:
 
 	ID3D11InputLayout* vertexLayout;
 	
+	Camera * camera;
+
 	void draw();
 	void defPass();
 	

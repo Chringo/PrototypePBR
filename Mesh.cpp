@@ -72,7 +72,7 @@ ID3D11Buffer * Mesh::getVertexBuffer() const
 	return this->vertexBuffer;
 }
 
-ID3D11Buffer * Mesh::getindexBuffer() const
+ID3D11Buffer * Mesh::getIndexBuffer() const
 {
 	return this->indexBuffer;
 }
