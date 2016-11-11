@@ -1,4 +1,25 @@
 #include "Deferr.h"
+#include "DDSTextureLoader.h"
+
+using namespace DirectX;
+
+void Deferr::InitDDS()
+{
+	HRESULT hr;
+	ID3D11Resource* textureResource;
+	ID3D11ShaderResourceView* textureResourceView;
+	size_t maxSize = 0;
+
+	wchar_t * testPath = L"./BBF/PBR dds/test_albedom.dds";
+	hr = CreateDDSTextureFromFile(
+		this->gDevice,
+		testPath,
+		&textureResource,
+		&textureResourceView,
+		maxSize,
+		(DDS_ALPHA_MODE*)DDS_ALPHA_MODE_UNKNOWN);
+
+}
 
 Deferr::Deferr()
 {
@@ -290,6 +311,7 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer)
 	this->gDeviceContext->PSSetShader(this->deferrPixelShader, nullptr, 0);
 
 	this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
+	this->gDeviceContext->PSSetShaderResources(0, 1, &this->textureResourceView);
 
 	this->gDeviceContext->DrawIndexed(36, 0, 0);
 }

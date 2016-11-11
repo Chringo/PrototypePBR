@@ -34,6 +34,11 @@ private:
 	ID3D11InputLayout* deferrVertexLayout;
 	ID3D11InputLayout* finalVertexLayout;
 
+	ID3D11Resource* textureResource = nullptr;
+	ID3D11ShaderResourceView* textureResourceView = nullptr;
+
+
+
 	const quadVertex triangleVertices[6] = 
 	{
 		//T1
@@ -61,5 +66,8 @@ private:
 	void initShaders();
 	void initBuffers();
 	void initTexViews();
+
+public:
+	void InitDDS();
 };
 

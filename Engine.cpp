@@ -266,6 +266,8 @@ bool Engine::initialize(HWND* window)
 
 	camera = new Camera(gDevice, gDeviceContext);
 
+	deferr->InitDDS();
+
 	return true;
 }
 
