@@ -195,7 +195,7 @@ void Deferr::initBuffers()
 
 void Deferr::initTexViews()
 {
-	for (int pass = 0; pass < PASSES; pass++)
+	for (int pass = 0; pass < RTV_COUNT; pass++)
 	{
 		HRESULT hr;
 		D3D11_TEXTURE2D_DESC textureDesc;
@@ -277,7 +277,7 @@ void Deferr::initTexViews()
 	stencilTest->Release();
 
 
-	for (int pass = 0; pass < PASSES; pass++)
+	for (int pass = 0; pass < RTV_COUNT; pass++)
 	{
 		T2Ds[pass]->Release();
 	}
@@ -302,24 +302,14 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 	ID3D11Buffer * cameraVpCb)
 {
 	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	for (unsigned int i = 0; i < PASSES; i++)
+	for (unsigned int i = 0; i < RTV_COUNT; i++)
 	{
 		this->gDeviceContext->ClearRenderTargetView(this->RTVs[i], black);
 	}
 	
 	this->gDeviceContext->ClearDepthStencilView(this->DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	
-	ID3D11RenderTargetView* rtvsToSet[] =
-	{
-		RTVs[0],
-		RTVs[1],
-		RTVs[2],
-		RTVs[3],
-	};
 
-	gDeviceContext->OMSetRenderTargets(PASSES, rtvsToSet, DSV);
-
-
+	gDeviceContext->OMSetRenderTargets(RTV_COUNT, RTVs, DSV);
 
 	UINT vertexSize = sizeof(Vertex);
 	UINT vertexCount = 36;
@@ -348,18 +338,19 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 
 	this->gDeviceContext->DrawIndexed(36, 0, 0);
 
-	//for (unsigned int i = 0; i < PASSES; i++)
-	//{
-	//	this->gDeviceContext->OMSetRenderTargets(4, &RTVs[i], NULL);
-	//}
+	//gDeviceContext->OMSetRenderTargets(RTV_COUNT, 0, 0);
+
+
 }
 
 void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV)
 {
+	this->gDeviceContext->OMSetRenderTargets(1, &RTV, DSV);
+	
 	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	this->gDeviceContext->ClearRenderTargetView(RTV, black);
+	this->gDeviceContext->ClearDepthStencilView(DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	gDeviceContext->OMSetRenderTargets(1, &RTV, DSV);
 
 	UINT vertexSize = sizeof(quadVertex);
 	UINT vertexCount = 6;
@@ -378,10 +369,10 @@ void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DS
 	this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
 	this->gDeviceContext->PSSetSamplers(1, 1, &pointSamplerState);
 
-	this->gDeviceContext->PSSetShaderResources(0, 2, SRVs);
+	this->gDeviceContext->PSSetShaderResources(0, RTV_COUNT, SRVs);
 
 	this->gDeviceContext->Draw(vertexCount, 0);
 
-	//this->gDeviceContext->PSSetShaderResources(0, PASSES, nullptr);
+	this->gDeviceContext->PSSetShaderResources(0, RTV_COUNT, nullsrvs);
 
 }

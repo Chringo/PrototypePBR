@@ -1,6 +1,6 @@
 #pragma once
 #include "GlobalData.h"
-#define PASSES 4
+#define RTV_COUNT 4
 class Deferr
 {
 public:
@@ -16,15 +16,23 @@ public:
 
 private:
 	Deferr();
+	ID3D11ShaderResourceView* nullsrvs[4] =
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	};
+
 	const UINT WIN_WIDTH = 640;
 	const UINT WIN_HEIGHT = 480;
 
 	ID3D11DeviceContext* gDeviceContext;
 	ID3D11Device* gDevice;
 	ID3D11DepthStencilView * DSV;
-	ID3D11ShaderResourceView * SRVs[PASSES];
-	ID3D11Texture2D * T2Ds[PASSES];
-	ID3D11RenderTargetView * RTVs[PASSES];
+	ID3D11ShaderResourceView * SRVs[RTV_COUNT];
+	ID3D11Texture2D * T2Ds[RTV_COUNT];
+	ID3D11RenderTargetView * RTVs[RTV_COUNT];
 	ID3D11Buffer * vertexBufferQuad;
 	ID3D11SamplerState * pointSamplerState;
 	ID3D11SamplerState * linearSamplerState;

@@ -22,6 +22,10 @@ private:
 
 	//interface hanling the front and backbuffer
 	IDXGISwapChain* gSwapChain;
+	ID3D11Texture2D* backBuffer;
+
+	D3D11_RASTERIZER_DESC rasterDesc;
+	ID3D11RasterizerState* gRasterState = nullptr;
 
 	ID3D11RenderTargetView* gRenderTargetView; //need this here?
 

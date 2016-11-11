@@ -12,6 +12,26 @@ Mesh::Mesh(meshDesc &mDesc)
 	this->indexCount = mDesc.indexCount;
 	this->transMat = mDesc.transMat;
 
+	for (int i = 0; i < this->vertexCount; i++)
+	{
+		float temp = vertexData[i].position.y;
+
+		vertexData[i].position.y = vertexData[i].position.z;
+		vertexData[i].position.z = temp;
+
+		//float tempN = vertexData[i].normal.y;
+
+		//vertexData[i].normal.y = vertexData[i].normal.z;
+		//vertexData[i].normal.z = temp;
+
+		vertexData[i].UV.y = 1.0 - vertexData[i].UV.y;
+	}
+
+	for (int i = 0; i < this->vertexCount; i++)
+	{
+
+	}
+
 	this->gDevice = mDesc.FLDesc->gDevice;
 	this->gDeviceContext = mDesc.FLDesc->gDeviceContext;
 	this->vertexBuffer = nullptr;

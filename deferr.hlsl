@@ -1,7 +1,8 @@
-Texture2D resource1 : register(t0);
-Texture2D resource2 : register(t1);
-Texture2D resource3 : register(t2);
-Texture2D resource4 : register(t3);
+Texture2D albedoTex : register(t0);
+Texture2D metalTex : register(t1);
+Texture2D normalTex : register(t2);
+Texture2D roughTex : register(t3);
+
 SamplerState linearSampler : register(s0);
 
 cbuffer worldMatrix : register(b0)
@@ -64,7 +65,7 @@ PS_OUT PS_main(VS_OUT input)
     PS_OUT output = (PS_OUT)0;
 
     output.wPosition = input.wPos;
-    output.color = (1.0, 1.0, 1.0, 1.0f);
+    output.color = albedoTex.Sample(linearSampler, input.UV);
     output.metalness = (1.0, 1.0, 1.0, 1.0);
     output.normal = float4(input.Normal, 1);
 

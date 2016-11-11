@@ -85,6 +85,7 @@ bool Engine::initialize(HWND* window)
 	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
+
 	if (this->enable4xMSAA)
 	{
 		sd.SampleDesc.Count = 4;
@@ -125,7 +126,7 @@ bool Engine::initialize(HWND* window)
 	//*************************
 	//render target view    ***
 	//*************************
-	ID3D11Texture2D* backBuffer;
+	//ID3D11Texture2D* backBuffer;
 	this->gSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
 	
 	result = this->gDevice->CreateRenderTargetView(backBuffer, 0, &this->gRenderTargetView);
@@ -177,6 +178,21 @@ bool Engine::initialize(HWND* window)
 	}
 
 	this->gDeviceContext->OMSetRenderTargets(1, &gRenderTargetView, this->mDepthStencilView);
+
+	rasterDesc.AntialiasedLineEnable = false;
+	rasterDesc.CullMode = D3D11_CULL_BACK;
+	rasterDesc.DepthBias = 0;
+	rasterDesc.DepthBiasClamp = 0.0f;
+	rasterDesc.DepthClipEnable = true;
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
+	//rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.MultisampleEnable = false;
+	rasterDesc.ScissorEnable = false;
+	rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+	result = gDevice->CreateRasterizerState(&rasterDesc, &gRasterState);
+	gDeviceContext->RSSetState(gRasterState);
 
 	/*
 	Set viewport
@@ -361,7 +377,7 @@ void Engine::render()
 	deferr->finalPass(gRenderTargetView, mDepthStencilView);
 	//this->draw();
 
-	HRESULT result = this->gSwapChain->Present(1, 0);
+	this->gSwapChain->Present(0, 0);
 }
 
 void Engine::defPass()
