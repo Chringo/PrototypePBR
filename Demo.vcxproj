@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="Deferr.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="FileLoader.cpp" />
@@ -150,12 +151,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="dds.h" />
+    <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="Deferr.h" />
+    <ClInclude Include="DirectXHelpers.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="FileLoader.h" />
     <ClInclude Include="GlobalData.h" />
+    <ClInclude Include="LoaderHelpers.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="PlatformHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="deferr.hlsl">
