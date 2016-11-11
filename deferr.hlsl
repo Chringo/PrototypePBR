@@ -66,8 +66,8 @@ PS_OUT PS_main(VS_OUT input)
 
     output.wPosition = input.wPos;
     output.color = albedoTex.Sample(linearSampler, input.UV);
-    output.metalness = (1.0, 1.0, 1.0, 1.0);
-    output.normal = float4(input.Normal, 1);
+    output.metalness = metalTex.Sample(linearSampler, input.UV);
+    output.normal = normalTex.Sample(linearSampler, input.UV);
 
     return output;
 };

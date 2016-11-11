@@ -46,7 +46,7 @@ void Model::update(ID3D11DeviceContext* gDeviceContext)
 {
 	//MAEK TRANSFORMATIONS TO WORLDMATRIX HERE
 	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixRotationY(0.0005f));
-	
+	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixRotationX(0.0005f));
 
 	//STORE TRANSFORMATIONS HERE
 	DirectX::XMStoreFloat4x4(&wm.world, worldMatrix);
