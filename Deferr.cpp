@@ -310,7 +310,7 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer)
 	this->gDeviceContext->GSSetShader(nullptr, nullptr, 0);
 	this->gDeviceContext->PSSetShader(this->deferrPixelShader, nullptr, 0);
 
-	//this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
+	this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
 	this->gDeviceContext->PSSetShaderResources(0, 1, &this->textureResourceView);
 
 	this->gDeviceContext->DrawIndexed(36, 0, 0);
@@ -337,5 +337,12 @@ void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DS
 	this->gDeviceContext->GSSetShader(nullptr, nullptr, 0);
 	this->gDeviceContext->PSSetShader(this->finalPixelShader, nullptr, 0);
 
+	this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
+	this->gDeviceContext->PSSetSamplers(1, 1, &pointSamplerState);
+
+	this->gDeviceContext->PSSetShaderResources(0, 2, SRVs);
+
 	this->gDeviceContext->Draw(vertexCount, 0);
+
+	this->gDeviceContext->Flush();
 }

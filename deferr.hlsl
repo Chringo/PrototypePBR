@@ -1,3 +1,16 @@
+SamplerState linearSampler : register(s0);
+
+cbuffer worldMatrix : register(b0)
+{
+    matrix worldMatrix;
+}
+
+cbuffer viewProj : register(b1)
+{
+    matrix viewMatrix;
+    matrix projectionMatrix;
+}
+
 struct VS_IN
 {
     float3 Pos : SV_POSITION;
@@ -14,16 +27,14 @@ struct VS_OUT
     float4 wPos : WORLDPOSITION;
 };
 
-cbuffer worldMatrix : register(b0)
+struct PS_OUT
 {
-    matrix worldMatrix;
-}
-
-cbuffer viewProj : register(b1)
-{
-    matrix viewMatrix;
-    matrix projectionMatrix;
-}
+    float4 wPosition : SV_Target0;
+    float4 color : SV_Target1;
+    float4 normal : SV_Target2;
+    float4 metalness : SV_Target3;
+    //float4 roughness : SV_Target4;
+};
 //-----------------------------------------------------------------------------------------
 // VERTEX SHADER
 //-----------------------------------------------------------------------------------------
@@ -44,8 +55,15 @@ VS_OUT VS_main(VS_IN input)
 //-----------------------------------------------------------------------------------------
 // PIXEL SHADER
 //-----------------------------------------------------------------------------------------
-float4 PS_main(VS_OUT input) : SV_Target
+PS_OUT PS_main(VS_OUT input) : SV_Target
 {
-    return float4(1.0, 1.0, 1.0, 1.0f);
+    PS_OUT output = (PS_OUT)0;
+
+    output.wPosition = input.wPos;
+    output.color = (1.0, 1.0, 1.0, 1.0f);
+    output.metalness = (1.0, 1.0, 1.0, 1.0);
+    output.normal = (1.0, 1.0, 1.0, 1.0);
+
+    return output;
 };
 

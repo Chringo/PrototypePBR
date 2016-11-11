@@ -1,3 +1,9 @@
+Texture2D colorTex : register(t0);
+Texture2D normalTex : register(t1);
+
+SamplerState linearSampler : register(s0);
+SamplerState pointSampler : register(s1);
+
 struct VS_IN
 {
     float3 Pos : POSITION;
@@ -26,5 +32,7 @@ VS_OUT VS_main(VS_IN input)
 
 float4 PS_main(VS_OUT input) : SV_Target
 {
+    float2 colorSamp = colorTex.Sample(linearSampler, input.UV);
+    
     return float4(1.0, 1.0, 1.0, 1.0f);
 };
