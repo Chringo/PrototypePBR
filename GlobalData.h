@@ -57,7 +57,6 @@ struct Vertex
 	DirectX::XMFLOAT2 UV;
 };
 
-
 struct meshDesc
 {
 	fileLoaderDesc * FLDesc;

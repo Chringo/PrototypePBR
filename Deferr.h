@@ -7,7 +7,8 @@ public:
 	Deferr(ID3D11DeviceContext* gDeviceContext,	ID3D11Device* gDevice);
 	~Deferr();
 
-	
+	void firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer);
+	void finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV);
 
 private:
 	Deferr();
@@ -21,12 +22,17 @@ private:
 	ID3D11Texture2D * T2Ds[PASSES];
 	ID3D11RenderTargetView * RTVs[PASSES];
 	ID3D11Buffer * vertexBufferQuad;
+	ID3D11SamplerState * pointSamplerState;
+	ID3D11SamplerState * linearSamplerState;
 
+	ID3D11VertexShader* deferrVertexShader;
+	ID3D11PixelShader* deferrPixelShader;
 
-	void initDefQuad();
-	void initShaders();
-	void initBuffers();
-	void initTexViews();
+	ID3D11VertexShader* finalVertexShader = nullptr;
+	ID3D11PixelShader* finalPixelShader;
+
+	ID3D11InputLayout* deferrVertexLayout;
+	ID3D11InputLayout* finalVertexLayout;
 
 	const quadVertex triangleVertices[6] = 
 	{
@@ -51,5 +57,9 @@ private:
 		1.0f, 1.0f			//v5 UV
 	};
 
+	void initDefQuad();
+	void initShaders();
+	void initBuffers();
+	void initTexViews();
 };
 

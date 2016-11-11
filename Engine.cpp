@@ -255,6 +255,8 @@ bool Engine::initialize(HWND* window)
 
 	//result = gDevice->CreateInputLayout(desc1, 2, pVS->GetBufferPointer(), pVS->GetBufferSize(), &this->vertexLayout);
 	//pVS->Release();
+	deferr = new Deferr(gDeviceContext, gDevice);
+
 	fileLoaderDesc FLDesc;
 	FLDesc.gDevice = gDevice;
 	FLDesc.gDeviceContext = gDeviceContext;
@@ -349,9 +351,10 @@ void Engine::render()
 	fileLoader->getModelVec()[0][0]->update(gDeviceContext);
 
 	//defpass first
-
+	deferr->firstPass(fileLoader->getVertexBuffer(), fileLoader->getIndexBuffer());
 	//draw ze final pass
-	this->draw();
+	deferr->finalPass(gRenderTargetView, mDepthStencilView);
+	//this->draw();
 }
 
 void Engine::defPass()

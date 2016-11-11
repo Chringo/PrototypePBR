@@ -3,11 +3,13 @@
 #include"GlobalData.h"
 #include "FileLoader.h"
 #include "Camera.h"
+#include "Deferr.h"
 
 class Engine
 {
 private:
 	FileLoader * fileLoader;
+	Deferr * deferr;
 
 	//This interface sets renderstates, bind resourses to the graphics pipeline, and issues rendering commands
 	ID3D11DeviceContext* gDeviceContext;
@@ -26,7 +28,7 @@ private:
 	ID3D11Texture2D* mDepthStencilBuffer;
 	ID3D11DepthStencilView* mDepthStencilView;
 
-	ID3D11VertexShader* vertexShader;
+	ID3D11VertexShader* vertexShader = nullptr;
 	ID3D11PixelShader* pixelShader;
 
 	ID3D11Buffer* indexBuffer;
