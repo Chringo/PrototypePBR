@@ -353,12 +353,15 @@ void Engine::render()
 	fileLoader->getModelVec()[0][0]->update(gDeviceContext);
 
 	//defpass first
-	deferr->firstPass(fileLoader->getVertexBuffer(), fileLoader->getIndexBuffer());
+	deferr->firstPass(fileLoader->getVertexBuffer(), 
+		fileLoader->getIndexBuffer(),
+		fileLoader->getModelVec()->at(0)->getConstantBufferW(), 
+		camera->getConstantBufferVP());
 	//draw ze final pass
 	deferr->finalPass(gRenderTargetView, mDepthStencilView);
 	//this->draw();
 
-	HRESULT result = this->gSwapChain->Present(0, 0);
+	HRESULT result = this->gSwapChain->Present(1, 0);
 }
 
 void Engine::defPass()

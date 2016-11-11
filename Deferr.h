@@ -7,7 +7,11 @@ public:
 	Deferr(ID3D11DeviceContext* gDeviceContext,	ID3D11Device* gDevice);
 	~Deferr();
 
-	void firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer);
+	void firstPass(ID3D11Buffer * vertexBuffer, 
+		ID3D11Buffer * indexBuffer,
+		ID3D11Buffer * modelWorldCb,
+		ID3D11Buffer * cameraVpCb
+	);
 	void finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV);
 
 private:
@@ -25,11 +29,11 @@ private:
 	ID3D11SamplerState * pointSamplerState;
 	ID3D11SamplerState * linearSamplerState;
 
-	ID3D11VertexShader* deferrVertexShader;
-	ID3D11PixelShader* deferrPixelShader;
+	ID3D11VertexShader* deferrVertexShader = nullptr;
+	ID3D11PixelShader* deferrPixelShader = nullptr;
 
 	ID3D11VertexShader* finalVertexShader = nullptr;
-	ID3D11PixelShader* finalPixelShader;
+	ID3D11PixelShader* finalPixelShader = nullptr;
 
 	ID3D11InputLayout* deferrVertexLayout;
 	ID3D11InputLayout* finalVertexLayout;

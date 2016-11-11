@@ -116,8 +116,8 @@ void Deferr::initShaders()
 
 	//DEFEEEEEEEEEERRRRRRRRRRRRRRR
 	ID3DBlob* pVS = nullptr;
-	D3DCompileFromFile(
-		L"Vertex.hlsl", // filename
+	hr = D3DCompileFromFile(
+		L"deferr.hlsl", // filename
 		nullptr,		// optional macros
 		nullptr,		// optional include files
 		"VS_main",		// entry point
@@ -144,8 +144,8 @@ void Deferr::initShaders()
 	pVS->Release();
 
 	ID3DBlob* pPS = nullptr;
-	D3DCompileFromFile(
-		L"Fragment.hlsl", // filename		//L"PixelShader.hlsl"
+	hr = D3DCompileFromFile(
+		L"deferr.hlsl", // filename		//L"PixelShader.hlsl"
 		nullptr,		// optional macros
 		nullptr,		// optional include files
 		"PS_main",		// entry point
@@ -273,7 +273,8 @@ Deferr::~Deferr()
 {
 }
 
-void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer)
+void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, ID3D11Buffer * modelWorldCb,
+	ID3D11Buffer * cameraVpCb)
 {
 	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	for (unsigned int i = 0; i < PASSES; i++)
@@ -293,6 +294,8 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer)
 
 	gDeviceContext->OMSetRenderTargets(PASSES, rtvsToSet, DSV);
 
+
+
 	UINT vertexSize = sizeof(Vertex);
 	UINT vertexCount = 36;
 	UINT indexSize = sizeof(Index);
@@ -310,10 +313,18 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer)
 	this->gDeviceContext->GSSetShader(nullptr, nullptr, 0);
 	this->gDeviceContext->PSSetShader(this->deferrPixelShader, nullptr, 0);
 
+	this->gDeviceContext->VSSetConstantBuffers(0, 1, &modelWorldCb);
+	this->gDeviceContext->VSSetConstantBuffers(1, 1, &cameraVpCb);
 	this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
 	this->gDeviceContext->PSSetShaderResources(0, 1, &this->textureResourceView);
 
+
 	this->gDeviceContext->DrawIndexed(36, 0, 0);
+
+	//for (unsigned int i = 0; i < PASSES; i++)
+	//{
+	//	this->gDeviceContext->OMSetRenderTargets(4, &RTVs[i], NULL);
+	//}
 }
 
 void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV)
@@ -344,5 +355,6 @@ void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DS
 
 	this->gDeviceContext->Draw(vertexCount, 0);
 
-	this->gDeviceContext->Flush();
+	//this->gDeviceContext->PSSetShaderResources(0, PASSES, nullptr);
+
 }

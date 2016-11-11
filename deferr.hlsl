@@ -13,7 +13,7 @@ cbuffer viewProj : register(b1)
 
 struct VS_IN
 {
-    float3 Pos : SV_POSITION;
+    float3 Pos : POSITION;
     float3 Normal : Normal;
     float2 UV : TEXCOORD0;
 };
@@ -55,14 +55,14 @@ VS_OUT VS_main(VS_IN input)
 //-----------------------------------------------------------------------------------------
 // PIXEL SHADER
 //-----------------------------------------------------------------------------------------
-PS_OUT PS_main(VS_OUT input) : SV_Target
+PS_OUT PS_main(VS_OUT input)
 {
     PS_OUT output = (PS_OUT)0;
 
     output.wPosition = input.wPos;
     output.color = (1.0, 1.0, 1.0, 1.0f);
     output.metalness = (1.0, 1.0, 1.0, 1.0);
-    output.normal = (1.0, 1.0, 1.0, 1.0);
+    output.normal = float4(input.Normal, 1);
 
     return output;
 };

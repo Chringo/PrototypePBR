@@ -32,7 +32,7 @@ VS_OUT VS_main(VS_IN input)
 
 float4 PS_main(VS_OUT input) : SV_Target
 {
-    float2 colorSamp = colorTex.Sample(linearSampler, input.UV);
+    float4 colorSamp = colorTex.Sample(linearSampler, input.UV);
     
-    return float4(1.0, 1.0, 1.0, 1.0f);
+    return colorSamp;
 };
