@@ -12,7 +12,7 @@ inline void Deferr::initDefQuad()
 	memset(&bufferDesc, 0, sizeof(bufferDesc));
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(quadVertex);
+	bufferDesc.ByteWidth = sizeof(quadVertex) * 6;
 
 	D3D11_SUBRESOURCE_DATA data;
 	data.pSysMem = triangleVertices;
@@ -315,5 +315,5 @@ void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DS
 	this->gDeviceContext->GSSetShader(nullptr, nullptr, 0);
 	this->gDeviceContext->PSSetShader(this->finalPixelShader, nullptr, 0);
 
-	this->gDeviceContext->Draw(6, 0);
+	this->gDeviceContext->Draw(vertexCount, 0);
 }

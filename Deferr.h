@@ -37,24 +37,24 @@ private:
 	const quadVertex triangleVertices[6] = 
 	{
 		//T1
-		-1.0f, -1.0f, 0.0f,	//v0 pos
-		0.0f, 1.0f,			//v0 UV
+		DirectX::XMFLOAT3 (-1.0f, -1.0f, 0.0f),	//v0 pos
+		DirectX::XMFLOAT2(0.0f, 1.0f),			//v0 UV
 
-		-1.0f, 1.0f, 0.0f,	//v1
-		0.0f, 0.0f,			//v1 UV
+		DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f),	//v1
+		DirectX::XMFLOAT2(0.0f, 0.0f),			//v1 UV
 
-		1.0f, -1.0f, 0.0f, //v2
-		1.0f, 1.0f,			//v2 UV
+		DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f), //v2
+		DirectX::XMFLOAT2(1.0f, 1.0f),			//v2 UV
 
 		//T2
-		-1.0f, 1.0f, 0.0f,	//v3 pos
-		0.0f, 0.0f,			//v3 UV
+		DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f),	//v3 pos
+		DirectX::XMFLOAT2(0.0f, 0.0f),			//v3 UV
 
-		1.0f, 1.0f, 0.0f,	//v4
-		1.0f, 0.0f,			//v4 UV
+		DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),	//v4
+		DirectX::XMFLOAT2(1.0f, 0.0f),			//v4 UV
 
-		1.0f, -1.0f, 0.0f,	//v5
-		1.0f, 1.0f			//v5 UV
+		DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f),	//v5
+		DirectX::XMFLOAT2(1.0f, 1.0f)			//v5 UV
 	};
 
 	void initDefQuad();

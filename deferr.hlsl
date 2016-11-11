@@ -10,6 +10,8 @@ struct VS_OUT
     float4 Pos : SV_POSITION;
     float3 Normal : Normal;
     float2 UV : TEXCOORD0;
+
+    float4 wPos : WORLDPOSITION;
 };
 
 cbuffer worldMatrix : register(b0)
@@ -35,6 +37,7 @@ VS_OUT VS_main(VS_IN input)
     output.Pos = mul(float4(input.Pos, 1), WVP);
     output.Normal = input.Normal;
     output.UV = input.UV;
+    output.wPos = mul(float4(input.Pos, 1), worldMatrix);
 
     return output;
 }

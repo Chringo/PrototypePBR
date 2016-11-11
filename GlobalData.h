@@ -69,8 +69,8 @@ struct meshDesc
 
 struct quadVertex
 {
-	float x, y, z;
-	float u, v;
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT2 UV;
 };
 //#pragma once
 //#pragma region utilStructs
