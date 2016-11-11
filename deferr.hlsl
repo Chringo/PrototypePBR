@@ -1,3 +1,7 @@
+Texture2D resource1 : register(t0);
+Texture2D resource2 : register(t1);
+Texture2D resource3 : register(t2);
+Texture2D resource4 : register(t3);
 SamplerState linearSampler : register(s0);
 
 cbuffer worldMatrix : register(b0)

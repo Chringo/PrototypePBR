@@ -6,41 +6,16 @@ using namespace DirectX;
 void Deferr::InitDDS()
 {
 	HRESULT hr;
+	ID3D11Resource* textureResource;
+	ID3D11ShaderResourceView* textureResourceView;
 	size_t maxSize = 0;
 
 	wchar_t * testPath = L"./BBF/PBR dds/test_albedom.dds";
 	hr = CreateDDSTextureFromFile(
 		this->gDevice,
 		testPath,
-		&this->albedoResource,
-		&this->albedoResourceView,
-		maxSize,
-		(DDS_ALPHA_MODE*)DDS_ALPHA_MODE_UNKNOWN);
-
-	testPath = L"./BBF/PBR dds/test_metalness.dds";
-	hr = CreateDDSTextureFromFile(
-		this->gDevice,
-		testPath,
-		&this->metalnessResource,
-		&this->metalnessResourceView,
-		maxSize,
-		(DDS_ALPHA_MODE*)DDS_ALPHA_MODE_UNKNOWN);
-
-	testPath = L"./BBF/PBR dds/test_normal.dds";
-	hr = CreateDDSTextureFromFile(
-		this->gDevice,
-		testPath,
-		&this->normalResource,
-		&this->normalResourceView,
-		maxSize,
-		(DDS_ALPHA_MODE*)DDS_ALPHA_MODE_UNKNOWN);
-
-	testPath = L"./BBF/PBR dds/test_roughness.dds";
-	hr = CreateDDSTextureFromFile(
-		this->gDevice,
-		testPath,
-		&this->roughnessResource,
-		&this->roughnessResourceView,
+		&textureResource,
+		&textureResourceView,
 		maxSize,
 		(DDS_ALPHA_MODE*)DDS_ALPHA_MODE_UNKNOWN);
 
@@ -335,11 +310,12 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer)
 	this->gDeviceContext->GSSetShader(nullptr, nullptr, 0);
 	this->gDeviceContext->PSSetShader(this->deferrPixelShader, nullptr, 0);
 
+<<<<<<< HEAD
+	//this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
+	this->gDeviceContext->PSSetShaderResources(0, 1, &this->textureResourceView);
+=======
 	this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
-	this->gDeviceContext->PSSetShaderResources(0, 1, &this->albedoResourceView);
-	this->gDeviceContext->PSSetShaderResources(1, 1, &this->metalnessResourceView);
-	this->gDeviceContext->PSSetShaderResources(2, 1, &this->normalResourceView);
-	this->gDeviceContext->PSSetShaderResources(3, 1, &this->roughnessResourceView);
+>>>>>>> master
 
 	this->gDeviceContext->DrawIndexed(36, 0, 0);
 }
