@@ -38,9 +38,14 @@ private:
 	ID3D11InputLayout* deferrVertexLayout;
 	ID3D11InputLayout* finalVertexLayout;
 
-	ID3D11Resource* textureResource = nullptr;
-	ID3D11ShaderResourceView* textureResourceView = nullptr;
-
+	ID3D11Resource* albedoResource = nullptr;
+	ID3D11ShaderResourceView* albedoResourceView = nullptr;
+	ID3D11Resource* metalnessResource = nullptr;
+	ID3D11ShaderResourceView* metalnessResourceView = nullptr;
+	ID3D11Resource* normalResource = nullptr;
+	ID3D11ShaderResourceView* normalResourceView = nullptr;
+	ID3D11Resource* roughnessResource = nullptr;
+	ID3D11ShaderResourceView* roughnessResourceView = nullptr;
 
 
 	const quadVertex triangleVertices[6] = 
