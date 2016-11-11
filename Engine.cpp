@@ -355,6 +355,8 @@ void Engine::render()
 	//draw ze final pass
 	deferr->finalPass(gRenderTargetView, mDepthStencilView);
 	//this->draw();
+
+	HRESULT result = this->gSwapChain->Present(0, 0);
 }
 
 void Engine::defPass()
