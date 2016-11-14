@@ -182,11 +182,11 @@ void Deferr::initShaders()
 	//GS
 	ID3DBlob* pGS = nullptr;
 	hr = D3DCompileFromFile(
-		L"deferr.hlsl", // filename		//L"PixelShader.hlsl"
+		L"deferr.hlsl", // filename
 		nullptr,		// optional macros
 		nullptr,		// optional include files
-		"PS_main",		// entry point
-		"ps_5_0",		// shader model (target)
+		"GS_main",		// entry point
+		"gs_5_0",		// shader model (target)
 		D3DCOMPILE_DEBUG,				// shader compile options
 		0,				// effect compile options
 		&pGS,			// double pointer to ID3DBlob		
@@ -195,8 +195,8 @@ void Deferr::initShaders()
 						// https://msdn.microsoft.com/en-us/library/windows/desktop/hh968107(v=vs.85).aspx
 	);
 
-	hr = gDevice->CreatePixelShader(pGS->GetBufferPointer(), pGS->GetBufferSize(), nullptr, &this->deferrGeometryShader);
-
+	hr = gDevice->CreateGeometryShader(pGS->GetBufferPointer(), pGS->GetBufferSize(), nullptr, &this->deferrGeometryShader);
+	pGS->Release();
 
 	//PS
 	ID3DBlob* pPS = nullptr;
@@ -216,7 +216,7 @@ void Deferr::initShaders()
 
 	hr = gDevice->CreatePixelShader(pPS->GetBufferPointer(), pPS->GetBufferSize(), nullptr, &this->deferrPixelShader);
 
-
+	pPS->Release();
 }
 
 void Deferr::initBuffers()
@@ -357,10 +357,11 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 	this->gDeviceContext->VSSetShader(this->deferrVertexShader, nullptr, 0);
 	this->gDeviceContext->HSSetShader(nullptr, nullptr, 0);
 	this->gDeviceContext->DSSetShader(nullptr, nullptr, 0);
-	this->gDeviceContext->GSSetShader(nullptr, nullptr, 0);
+	this->gDeviceContext->GSSetShader(this->deferrGeometryShader, nullptr, 0);
 	this->gDeviceContext->PSSetShader(this->deferrPixelShader, nullptr, 0);
 
 	this->gDeviceContext->VSSetConstantBuffers(0, 1, &modelWorldCb);
+	this->gDeviceContext->GSSetConstantBuffers(0, 1, &modelWorldCb);
 	this->gDeviceContext->VSSetConstantBuffers(1, 1, &cameraVpCb);
 	this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
 	this->gDeviceContext->PSSetShaderResources(0, 1, &this->albedoResourceView);

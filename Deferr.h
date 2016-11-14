@@ -40,6 +40,7 @@ private:
 
 	ID3D11VertexShader* deferrVertexShader = nullptr;
 	ID3D11PixelShader* deferrPixelShader = nullptr;
+	ID3D11GeometryShader* deferrGeometryShader = nullptr;
 
 	ID3D11VertexShader* finalVertexShader = nullptr;
 	ID3D11PixelShader* finalPixelShader = nullptr;
