@@ -12,7 +12,7 @@ public:
 		ID3D11Buffer * modelWorldCb,
 		ID3D11Buffer * cameraVpCb
 	);
-	void finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV);
+	void finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV, ID3D11Buffer * modelWorldCb);
 
 private:
 	Deferr();
