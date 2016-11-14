@@ -1,6 +1,6 @@
 #pragma once
 #include "GlobalData.h"
-#define RTV_COUNT 4
+#define RTV_COUNT 5
 class Deferr
 {
 public:
@@ -16,7 +16,7 @@ public:
 
 private:
 	Deferr();
-	ID3D11ShaderResourceView* nullsrvs[4] =
+	ID3D11ShaderResourceView* nullsrvs[5] =
 	{
 		NULL,
 		NULL,

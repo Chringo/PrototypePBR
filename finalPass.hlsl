@@ -2,6 +2,7 @@ Texture2D wPosTex : register(t0);
 Texture2D colorTex : register(t1);
 Texture2D normalTex : register(t2);
 Texture2D metalTex : register(t3);
+Texture2D AOTex : register(t4);
 
 SamplerState linearSampler : register(s0);
 SamplerState pointSampler : register(s1);
@@ -38,6 +39,8 @@ float4 PS_main(VS_OUT input) : SV_Target
     float4 colorSamp = colorTex.Sample(linearSampler, input.UV);
     float4 normSamp = normalTex.Sample(linearSampler, input.UV);
     float4 metalSamp = metalTex.Sample(linearSampler, input.UV);
-    
+    //float4 AOsamp = AOTex.Sample(linearSampler, input.UV);
+
+
     return colorSamp;
 };
