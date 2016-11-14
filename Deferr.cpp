@@ -364,6 +364,7 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 	this->gDeviceContext->GSSetConstantBuffers(0, 1, &modelWorldCb);
 	this->gDeviceContext->VSSetConstantBuffers(1, 1, &cameraVpCb);
 	this->gDeviceContext->PSSetSamplers(0, 1, &linearSamplerState);
+	this->gDeviceContext->PSSetSamplers(1, 1, &pointSamplerState);
 	this->gDeviceContext->PSSetShaderResources(0, 1, &this->albedoResourceView);
 	this->gDeviceContext->PSSetShaderResources(1, 1, &this->metalnessResourceView);
 	this->gDeviceContext->PSSetShaderResources(2, 1, &this->normalResourceView);

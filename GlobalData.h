@@ -6,8 +6,8 @@
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
-UINT const CLIENT_WIDTH = 640;
-UINT const CLIENT_HEIGHT = 480;
+UINT const CLIENT_WIDTH = 1280;
+UINT const CLIENT_HEIGHT = 720;
 
 
 

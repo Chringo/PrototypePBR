@@ -2,7 +2,8 @@ Texture2D wPosTex : register(t0);
 Texture2D colorTex : register(t1);
 Texture2D normalTex : register(t2);
 Texture2D metalTex : register(t3);
-Texture2D AOTex : register(t4);
+Texture2D roughTex : register(t4);
+Texture2D AOTex : register(t5);
 
 SamplerState linearSampler : register(s0);
 SamplerState pointSampler : register(s1);
@@ -25,14 +26,86 @@ struct VS_OUT
 };
 
 
-struct HC_LIGHTS
+struct LIGHT
 {
-	float4 lightPos;
-	float4 camPos;
-	float4 lightDir;
-	float4 lightColor;
-	float4 lightAmbient;
+	float3 lightPos;
+	float3 camPos;
+	float3 lightDir;
+	float3 lightColor;
+	float3 lightAmbient;
 };
+
+
+LIGHT initLight()
+{
+    LIGHT light;
+    light.lightPos = float3(0.0f, 0.0f, -1.5f);
+	//lights.lightDir = float4(0.0f, 0.5f, 1.0f, 1.0f);
+    light.lightColor = float3(1.0f, 1.0f, 1.0f);
+    light.lightAmbient = float3(0.2f, 0.2f, 0.2f);
+
+    return light;
+}
+
+//PBR FUNTIONS
+//sRGB n Linear
+float3 linearToSRGB( in float3 linearCol)
+{
+    float3 sRGBLow = linearCol * 12.92;
+    float3 sRGBHigh = (pow(abs(linearCol), 1.0 / 2.4) * 1.055) - 0.055;
+    float3 sRGB = (linearCol <= 0.0031308) ? sRGBLow : sRGBHigh;
+    return sRGB;
+}
+
+float3 sRGBtoLinear(in float3 sRGBCol)
+{
+    float3 sRGBLow = sRGBCol / 12.92;
+    float3 sRGBHigh = (pow(abs(sRGBCol), 1.0 / 2.4) / 1.055) - 2.4;
+    float3 linearRGB = (sRGBCol <= 0.04045) ? sRGBLow : sRGBHigh;
+    return linearRGB;
+}
+
+float3 schlick(float3 f0, float f90, float u) //f0 is spec/metalness, f90 is spec/metal factor
+{
+    return f0 + (f90 - f0) * pow(1.0f - u, 5.0f);
+}
+
+float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float linearRoughness)
+{
+    float energyBias = lerp(0, 0.05, linearRoughness);
+    float energyFactor = lerp(1.0, 1.0 / 1 - 51, linearRoughness);
+    float fd90 = energyBias + 2.0 * LdotH * LdotH * linearRoughness;
+    float3 f0 = float3(1.0, 1.0, 1.0);
+    float lightScatter = schlick(f0, fd90, NdotL).r;
+    float viewScatter = schlick(f0, fd90, NdotV).r;
+    
+    return lightScatter * viewScatter * energyFactor;
+}
+
+float heightCorrelatedGGX(float NdotV, float NdotL, float alphaG)
+{
+    // Original formulation of G_SmithGGX Correlated
+    // lambda_v = (-1 + sqrt ( alphaG2 * (1 - NdotL2 ) / NdotL2 + 1)) * 0.5f;
+    // lambda_l = (-1 + sqrt ( alphaG2 * (1 - NdotV2 ) / NdotV2 + 1)) * 0.5f;
+    // G_SmithGGXCorrelated = 1 / (1 + lambda_v + lambda_l );
+    // V_SmithGGXCorrelated = G_SmithGGXCorrelated / (4.0 f * NdotL * NdotV );
+    float alphaG2 = alphaG * alphaG;
+    float lambdaGGXv; //thefuq, why can i initialize these with a value...
+    float lambdaGGXh;
+    //"NdotL*" and "NdotV *" are explicitely inversed, this is not a mistake    lambdaGGXv = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
+    lambdaGGXh = NdotV * sqrt((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
+
+    return 0.5 / (lambdaGGXv + lambdaGGXh);
+}
+
+float GGX(float NdotH, float m)
+{
+    //divide by PI happens later
+    float m2 = m * m;
+    float f = (NdotH * m2 - NdotH) * NdotH + 1;
+    return m2 / (f * f);
+}
+
 
 
 //-----------------------------------------------------------------------------------------
@@ -50,31 +123,73 @@ VS_OUT VS_main(VS_IN input)
 
 float4 PS_main(VS_OUT input) : SV_Target
 {
-	HC_LIGHTS lights = (HC_LIGHTS) 0;
-	lights.lightPos = float4(5.0f, 5.0f, 5.0f, 1.0f);
-	lights.camPos = float4(0.0f, 0.0f, -3.0f, 1.0f);
-	lights.lightDir = float4(0.1f, 0.1f, 0.1f, 1.0f);
-	lights.lightColor = float4(0.8f, 0.8f, 0.8f, 1.0f);
-	lights.lightAmbient = float4(0.2f, 0.2f, 0.2f, 1.0f);
+    float3 camPos = float3(0.0f, 0.0f, -1.5f);
+    uint lightCount = 1;
+    float Pi = 3.14159265359;
+    LIGHT light = initLight();
 
-	lights.camPos = mul(lights.camPos, worldMatrix);
-	lights.lightPos = mul(lights.lightPos, worldMatrix);
-	lights.lightDir = mul(lights.lightDir, worldMatrix);
-
+    //SAMPLING
     float4 wPosSamp = wPosTex.Sample(pointSampler, input.UV);
-    float4 colorSamp = colorTex.Sample(linearSampler, input.UV);
-    float4 normSamp = normalTex.Sample(linearSampler, input.UV);
-    float4 metalSamp = metalTex.Sample(linearSampler, input.UV);
+    float3 metalSamp = metalTex.Sample(linearSampler, input.UV);
+    float3 colorSamp = colorTex.Sample(linearSampler, input.UV);
+    float3 N = normalTex.Sample(linearSampler, input.UV);
+    float3 AOSamp = AOTex.Sample(linearSampler, input.UV);
+    float3 roughSamp = roughTex.Sample(linearSampler, input.UV);
+
+    float4 diffuseLight;
+    float4 specularLight;
 
 
+    //FOR EACH LIGHT
+    for (uint i = 0; i < lightCount; i++)
+    {
+        //PBR variables 
+        float3 V = float3(0.0f, 0.0f, 1.0f); //camDir
+        float3 L = normalize(light.lightPos - camPos);
+        float3 H = normalize(V + L);
+        float lightPower = 0;
 
-    //LIGHT CALC
-	float3 lightDirection = (-lights.lightDir - wPosSamp);
+        float LdotH = saturate(dot(L, H));
+        float NdotH = saturate(dot(N, H));
+        float NdotL = saturate(dot(N, L));
+        float VdotH = saturate(dot(V, H));
+        float NdotV = saturate(dot(N, V));
 
-	float lightIntensity = saturate(dot((normSamp.xyz), lightDirection));
-	float4 norColor = saturate(lights.lightColor * lightIntensity);
+        //if (dot(camPos - light.lightPos, normalize(light.lightDir)) > 0) //just for lights with direction.
+
+        //else //lights with no direction
+        lightPower = 1.0; //could add falloff factor
+        
+        //DO SHADOW STUFF HERE
+
+        //DIFFUSE
+        float fd = DisneyDiffuse(NdotV, NdotL, NdotH, roughSamp.x); //roughness should be linear
+        diffuseLight += float4(fd.xxx * light.lightColor * lightPower * colorSamp.rgb, 1);
+
+        //SPECULAR
+        float3 f = schlick(metalSamp.x, 1, LdotH);
+        float vis = heightCorrelatedGGX(NdotV, NdotL, roughSamp.x); //roughness should be sRGB
+        float d = GGX(NdotH, roughSamp.x); //roughness should be sRGB
+
+        float3 fr = d * f * vis / Pi;
+        specularLight += float4(fr * metalSamp.x * light.lightColor * lightPower, 1);
+    }
+
+
+    return specularLight;
 
     //float4 AOsamp = AOTex.Sample(linearSampler, input.UV);
 
-	return colorSamp * norColor + colorSamp * lights.lightAmbient;
+    return float4(metalSamp, 1);
+    //return float4(metalSamp, 1);
+
+    //return float4(saturate(colorSamp.xyz * norColor).xyz + (colorSamp.xyz * light.lightAmbient), 1.0);
+    //return normSamp;
 };
+
+
+//    //LIGHT CALC
+//float3 lightDirection = normalize(light.lightPos - (wPosSamp.xyz));
+//float lightIntensity = saturate(dot(normSamp, lightDirection));
+
+//float3 norColor = saturate(light.lightColor * lightIntensity);

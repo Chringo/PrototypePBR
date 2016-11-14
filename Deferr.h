@@ -1,6 +1,6 @@
 #pragma once
 #include "GlobalData.h"
-#define RTV_COUNT 5
+#define RTV_COUNT 6
 class Deferr
 {
 public:
@@ -16,8 +16,9 @@ public:
 
 private:
 	Deferr();
-	ID3D11ShaderResourceView* nullsrvs[5] =
+	ID3D11ShaderResourceView* nullsrvs[RTV_COUNT] =
 	{
+		NULL,
 		NULL,
 		NULL,
 		NULL,
@@ -25,8 +26,8 @@ private:
 		NULL
 	};
 
-	const UINT WIN_WIDTH = 640;
-	const UINT WIN_HEIGHT = 480;
+	const UINT WIN_WIDTH = CLIENT_WIDTH;
+	const UINT WIN_HEIGHT = CLIENT_HEIGHT;
 
 	ID3D11DeviceContext* gDeviceContext;
 	ID3D11Device* gDevice;
