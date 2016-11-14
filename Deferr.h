@@ -21,6 +21,7 @@ private:
 		NULL,
 		NULL,
 		NULL,
+		NULL,
 		NULL
 	};
 

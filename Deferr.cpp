@@ -140,6 +140,7 @@ void Deferr::initShaders()
 	pfPs->Release();
 
 	//DEFEEEEEEEEEERRRRRRRRRRRRRRR
+	//VS
 	ID3DBlob* pVS = nullptr;
 	hr = D3DCompileFromFile(
 		L"deferr.hlsl", // filename
@@ -169,6 +170,26 @@ void Deferr::initShaders()
 	hr = gDevice->CreateInputLayout(desc1, ARRAYSIZE(desc1), pVS->GetBufferPointer(), pVS->GetBufferSize(), &this->deferrVertexLayout);
 	pVS->Release();
 
+	//GS
+	ID3DBlob* pGS = nullptr;
+	hr = D3DCompileFromFile(
+		L"deferr.hlsl", // filename		//L"PixelShader.hlsl"
+		nullptr,		// optional macros
+		nullptr,		// optional include files
+		"PS_main",		// entry point
+		"ps_5_0",		// shader model (target)
+		D3DCOMPILE_DEBUG,				// shader compile options
+		0,				// effect compile options
+		&pGS,			// double pointer to ID3DBlob		
+		nullptr			// pointer for Error Blob messages.
+						// how to use the Error blob, see here
+						// https://msdn.microsoft.com/en-us/library/windows/desktop/hh968107(v=vs.85).aspx
+	);
+
+	hr = gDevice->CreatePixelShader(pGS->GetBufferPointer(), pGS->GetBufferSize(), nullptr, &this->deferrGeometryShader);
+
+
+	//PS
 	ID3DBlob* pPS = nullptr;
 	hr = D3DCompileFromFile(
 		L"deferr.hlsl", // filename		//L"PixelShader.hlsl"
@@ -185,6 +206,7 @@ void Deferr::initShaders()
 	);
 
 	hr = gDevice->CreatePixelShader(pPS->GetBufferPointer(), pPS->GetBufferSize(), nullptr, &this->deferrPixelShader);
+
 
 }
 
