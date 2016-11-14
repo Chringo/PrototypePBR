@@ -374,7 +374,7 @@ void Engine::render()
 		fileLoader->getModelVec()->at(0)->getConstantBufferW(), 
 		camera->getConstantBufferVP());
 	//draw ze final pass
-	deferr->finalPass(gRenderTargetView, mDepthStencilView);
+	deferr->finalPass(gRenderTargetView, mDepthStencilView, fileLoader->getModelVec()->at(0)->getConstantBufferW());
 	//this->draw();
 
 	this->gSwapChain->Present(0, 0);

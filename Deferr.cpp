@@ -377,7 +377,7 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 
 }
 
-void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV)
+void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV, ID3D11Buffer * modelWorldCb)
 {
 	this->gDeviceContext->OMSetRenderTargets(1, &RTV, DSV);
 	
@@ -393,6 +393,8 @@ void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DS
 	this->gDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	this->gDeviceContext->IASetVertexBuffers(0, 1, &vertexBufferQuad, &vertexSize, &offset);
 	this->gDeviceContext->IASetInputLayout(this->finalVertexLayout);
+
+	this->gDeviceContext->PSSetConstantBuffers(0, 1, &modelWorldCb);
 
 	this->gDeviceContext->VSSetShader(this->finalVertexShader, nullptr, 0);
 	this->gDeviceContext->HSSetShader(nullptr, nullptr, 0);

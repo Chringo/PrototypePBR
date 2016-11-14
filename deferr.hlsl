@@ -17,6 +17,7 @@ cbuffer viewProj : register(b1)
     matrix projectionMatrix;
 }
 
+
 struct VS_IN
 {
     float3 Pos : POSITION;
