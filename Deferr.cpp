@@ -44,6 +44,15 @@ void Deferr::InitDDS()
 		maxSize,
 		(DDS_ALPHA_MODE*)DDS_ALPHA_MODE_UNKNOWN);
 
+	testPath = L"./BBF/PBR dds/test_ao.dds";
+	hr = CreateDDSTextureFromFile(
+		this->gDevice,
+		testPath,
+		&this->aoResource,
+		&this->aoResourceView,
+		maxSize,
+		(DDS_ALPHA_MODE*)DDS_ALPHA_MODE_UNKNOWN);
+
 }
 
 Deferr::Deferr()
@@ -336,6 +345,7 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 	this->gDeviceContext->PSSetShaderResources(1, 1, &this->metalnessResourceView);
 	this->gDeviceContext->PSSetShaderResources(2, 1, &this->normalResourceView);
 	this->gDeviceContext->PSSetShaderResources(3, 1, &this->roughnessResourceView);
+	this->gDeviceContext->PSSetShaderResources(4, 1, &this->aoResourceView);
 
 	this->gDeviceContext->DrawIndexed(36, 0, 0);
 

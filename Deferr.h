@@ -54,6 +54,8 @@ private:
 	ID3D11ShaderResourceView* normalResourceView = nullptr;
 	ID3D11Resource* roughnessResource = nullptr;
 	ID3D11ShaderResourceView* roughnessResourceView = nullptr;
+	ID3D11Resource* aoResource = nullptr;
+	ID3D11ShaderResourceView* aoResourceView = nullptr;
 
 
 	const quadVertex triangleVertices[6] = 
