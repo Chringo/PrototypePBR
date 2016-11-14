@@ -39,5 +39,5 @@ float4 PS_main(VS_OUT input) : SV_Target
     float4 normSamp = normalTex.Sample(linearSampler, input.UV);
     float4 metalSamp = metalTex.Sample(linearSampler, input.UV);
     
-    return metalSamp;
+    return colorSamp;
 };

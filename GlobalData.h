@@ -42,6 +42,7 @@ struct MeshHeader
 	unsigned int vertices;
 	unsigned int indexLength;
 	double transformationMatrix[16];
+	bool skeleton;
 };
 
 struct Index
@@ -53,7 +54,7 @@ struct Vertex
 {
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 normal;
-	//DirectX::XMFLOAT3 tangent;
+	DirectX::XMFLOAT3 tangent;
 	DirectX::XMFLOAT2 UV;
 };
 
