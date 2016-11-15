@@ -178,7 +178,7 @@ void Deferr::initShaders()
 
 	hr = gDevice->CreateInputLayout(desc1, ARRAYSIZE(desc1), pVS->GetBufferPointer(), pVS->GetBufferSize(), &this->deferrVertexLayout);
 	pVS->Release();
-
+	
 	//GS
 	ID3DBlob* pGS = nullptr;
 	hr = D3DCompileFromFile(
@@ -242,7 +242,7 @@ void Deferr::initTexViews()
 		textureDesc.Height = (UINT)WIN_HEIGHT;
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
-		textureDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		textureDesc.SampleDesc.Count = 1;
 		textureDesc.Usage = D3D11_USAGE_DEFAULT;
 		textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -371,7 +371,7 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 	this->gDeviceContext->PSSetShaderResources(3, 1, &this->roughnessResourceView);
 	this->gDeviceContext->PSSetShaderResources(4, 1, &this->aoResourceView);
 
-	this->gDeviceContext->DrawIndexed(36, 0, 0);
+	this->gDeviceContext->DrawIndexed(vertexCount, 0, 0);
 
 	//gDeviceContext->OMSetRenderTargets(RTV_COUNT, 0, 0);
 

@@ -18,7 +18,7 @@ Mesh::Mesh(meshDesc &mDesc)
 
 	////	vertexData[i].position.y = vertexData[i].position.z;
 	////	vertexData[i].position.z = temp;
-
+	
 	////	//float tempN = vertexData[i].normal.y;
 
 	////	//vertexData[i].normal.y = vertexData[i].normal.z;
@@ -27,6 +27,8 @@ Mesh::Mesh(meshDesc &mDesc)
 	////	vertexData[i].UV.y = 1.0 - vertexData[i].UV.y;
 	//	Vertex bajs = this->vertexData[i];
 	//}
+
+
 
 
 	this->gDevice = mDesc.FLDesc->gDevice;
