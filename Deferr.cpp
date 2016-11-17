@@ -333,7 +333,7 @@ Deferr::~Deferr()
 void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, ID3D11Buffer * modelWorldCb,
 	ID3D11Buffer * cameraVpCb)
 {
-	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float black[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	for (unsigned int i = 0; i < RTV_COUNT; i++)
 	{
 		this->gDeviceContext->ClearRenderTargetView(this->RTVs[i], black);
@@ -382,7 +382,7 @@ void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DS
 {
 	this->gDeviceContext->OMSetRenderTargets(1, &RTV, DSV);
 	
-	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float black[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	this->gDeviceContext->ClearRenderTargetView(RTV, black);
 	this->gDeviceContext->ClearDepthStencilView(DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 

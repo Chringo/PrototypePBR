@@ -387,7 +387,7 @@ void Engine::defPass()
 
 void Engine::draw()
 {
-	float black[4] = { 0.0f,0.0f,0.0f, 1.0f };
+	float black[4] = { 1.0f,1.0f,1.0f, 1.0f };
 	this->gDeviceContext->ClearRenderTargetView(this->gRenderTargetView, black);
 	this->gDeviceContext->ClearDepthStencilView(this->mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
