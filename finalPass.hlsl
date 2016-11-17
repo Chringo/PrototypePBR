@@ -206,9 +206,9 @@ float4 PS_main(VS_OUT input) : SV_Target
         //return specularLight;
     }
 
+    return diffuseLight;
     //float4 redspec = (specularLight.r, 0.0, 0.0, 0.0);
 
-    return diffuseLight;
 
 
 

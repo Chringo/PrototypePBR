@@ -1,0 +1,642 @@
+//--------------------------------------------------------------------------------------
+// DrawTri.ps
+// Direct3D 11 Shader Model 4.0 Demo
+// Copyright (c) Stefan Petersson, 2011
+//--------------------------------------------------------------------------------------
+//BRA INFO: http://docs.garagegames.com/torque-3d/official/content/documentation/Artist%20Guide/Formats/TextureCompression.html
+
+
+
+#include "ViewerCommon.hlsl"
+
+// Constants
+static const float Pi = 3.14159265359;
+static const float OneDivPi = 1/Pi;
+
+
+
+float smoothDistanceAtt ( float squaredDistance , float invSqrAttRadius )
+{
+	float factor = squaredDistance * invSqrAttRadius;
+	float smoothFactor = saturate (1.0f - factor * factor );
+	return smoothFactor * smoothFactor;
+}
+
+float getDistanceAtt ( float3 unormalizedLightVector , float invSqrAttRadius )
+{
+	float sqrDist = dot ( unormalizedLightVector , unormalizedLightVector );
+	float attenuation = 1.0 / (max ( sqrDist , 0.01*0.01) );
+	attenuation *= smoothDistanceAtt ( sqrDist , invSqrAttRadius );
+
+	return attenuation;
+}
+
+float getAngleAtt ( float3 normalizedLightVector , float3 lightDir , float lightAngleScale , float lightAngleOffset )
+{
+	// On the CPU
+	// float lightAngleScale = 1.0f / max (0.001f, ( cosInner - cosOuter ));
+	// float lightAngleOffset = -cosOuter * angleScale;
+
+	float cd = dot ( lightDir , normalizedLightVector );
+	float attenuation = saturate (cd * lightAngleScale + lightAngleOffset );
+	// smooth the transition
+	attenuation *= attenuation;
+
+	return attenuation;
+}
+
+// A right disk is a disk oriented to always face the lit surface .
+// Solid angle of a sphere or a right disk is 2 PI (1 - cos( subtended angle )).
+// Subtended angle sigma = arcsin (r / d) for a sphere
+// and sigma = atan (r / d) for a right disk
+// sinSigmaSqr = sin( subtended angle )^2, it is (r^2 / d^2) for a sphere
+// and (r^2 / ( r^2 + d ^2) ) for a disk
+// cosTheta is not clamped
+float illuminanceSphereOrDisk ( float cosTheta , float sinSigmaSqr )
+{
+	float sinTheta = sqrt (1.0f - cosTheta * cosTheta );
+
+	float illuminance = 0.0f;
+	// Note : Following test is equivalent to the original formula .
+	// There is 3 phase in the curve : cosTheta > sqrt ( sinSigmaSqr ),
+	// cosTheta > -sqrt ( sinSigmaSqr ) and else it is 0
+	// The two outer case can be merge into a cosTheta * cosTheta > sinSigmaSqr
+	// and using saturate ( cosTheta ) instead .
+	if ( cosTheta * cosTheta > sinSigmaSqr )
+	{
+		illuminance = PI * sinSigmaSqr * saturate ( cosTheta );
+	}
+	else
+	{
+		float x = sqrt (1.0f / sinSigmaSqr - 1.0f); // For a disk this simplify to x = d / r
+		float y = -x * ( cosTheta / sinTheta );
+		float sinThetaSqrtY = sinTheta * sqrt (1.0f - y * y);
+		illuminance = ( cosTheta * acos (y) - x * sinThetaSqrtY ) * sinSigmaSqr + atan (sinThetaSqrtY / x);
+	}
+
+	return max ( illuminance, 0.0f);
+}
+
+float rightPyramidSolidAngle(float dist, float halfWidth, float halfHeight)
+{
+	float a = halfWidth;
+	float b = halfHeight;
+	float h = dist;
+
+	return 4 * asin(a * b / sqrt((a * a + h * h) * (b * b + h * h)));
+}
+
+float rectangleSolidAngle(float3 worldPos, float3 p0, float3 p1, float3 p2, float3 p3)
+{
+	float3 v0 = p0 - worldPos;
+	float3 v1 = p1 - worldPos;
+	float3 v2 = p2 - worldPos;
+	float3 v3 = p3 - worldPos;
+
+	float3 n0 = normalize(cross(v0 , v1));
+	float3 n1 = normalize(cross(v1 , v2));
+	float3 n2 = normalize(cross(v2 , v3));
+	float3 n3 = normalize(cross(v3 , v0));
+
+	float g0 = acos(dot(-n0 , n1));
+	float g1 = acos(dot(-n1 , n2));
+	float g2 = acos(dot(-n2 , n3));
+	float g3 = acos(dot(-n3 , n0));
+
+	return g0 + g1 + g2 + g3 - 2 * PI;
+}
+
+//TUBE LIGHT
+// Return the closest point on the line ( without limit )
+float3 closestPointOnLine ( float3 a, float3 b, float3 c)
+{
+	float3 ab = b - a;
+	float t = dot(c - a, ab) / dot(ab , ab);
+	return a + t * ab;
+}
+
+// Return the closest point on the segment ( with limit )
+float3 closestPointOnSegment ( float3 a, float3 b, float3 c)
+{
+	float3 ab = b - a;
+	float t = dot(c - a, ab) / dot(ab , ab);
+	return a + saturate (t) * ab;
+}
+
+struct TubeLight
+{
+	float3 P0, P1;
+	float3 Left;
+	float Width;
+	float Radius;
+};
+
+float tubeIlluminance(TubeLight tl, float3 worldPos, float3 worldNormal)
+{
+	// The sphere is placed at the nearest point on the segment .
+	// The rectangular plane is define by the following orthonormal frame :
+	float3 forward = normalize( closestPointOnLine(tl.P0 , tl.P1 , worldPos) - worldPos);
+	float3 left = tl.Left;
+	float3 up = cross( left , forward );
+
+	float3 lightPos = (tl.P0 + tl.P1) * 0.5f;
+	float lightWidth = tl.Width;
+	float lightRadius = tl.Radius;
+
+	float3 p0 = lightPos - left * (0.5 * lightWidth) + lightRadius * up;
+	float3 p1 = lightPos - left * (0.5 * lightWidth) - lightRadius * up;
+	float3 p2 = lightPos + left * (0.5 * lightWidth) - lightRadius * up;
+	float3 p3 = lightPos + left * (0.5 * lightWidth) + lightRadius * up;
+
+	float solidAngle = rectangleSolidAngle( worldPos , p0 , p1 , p2 , p3);
+
+	float illuminance = solidAngle * 0.2 * (
+		saturate(dot(normalize(p0 - worldPos), worldNormal)) +
+		saturate(dot(normalize(p1 - worldPos), worldNormal)) +
+		saturate(dot(normalize(p2 - worldPos), worldNormal)) +
+		saturate(dot(normalize(p3 - worldPos), worldNormal)) +
+		saturate(dot(normalize(lightPos - worldPos), worldNormal)));
+
+	// We then add the contribution of the sphere
+	float3 spherePosition = closestPointOnSegment(tl.P0 , tl.P1 , worldPos);
+	float3 sphereUnormL = spherePosition - worldPos;
+	float3 sphereL = normalize (sphereUnormL);
+	float sqrSphereDistance = dot(sphereUnormL , sphereUnormL);
+
+	float illuminanceSphere = PI * saturate(dot( sphereL, worldNormal)) *
+	(( lightRadius * lightRadius ) / sqrSphereDistance);
+
+	illuminance += illuminanceSphere;
+
+	return illuminance;
+}
+
+// We have a better approximation of the off specular peak
+// but due to the other approximations we found this one performs better .
+// N is the normal direction
+// R is the mirror vector
+// This approximation works fine for G smith correlated and uncorrelated
+float3 getSpecularDominantDir ( float3 N, float3 R, float roughness )
+{
+	float smoothness = saturate (1 - roughness );
+	float lerpFactor = smoothness * ( sqrt ( smoothness ) + roughness );
+	// The result is not normalized as we fetch in a cubemap
+	return lerp (N, R, lerpFactor );
+}
+
+float3 getDiffuseDominantDir ( float3 N, float3 V , float roughness )
+{
+	float a = 1.02341f * roughness - 1.51174f;
+	float b = -0.511705f * roughness + 0.755868f;
+
+	float NdotV = abs( dot (N, V)) + 1e-5f; // avoid artifact
+	float lerpFactor = saturate (( NdotV * a + b) * roughness );
+
+	return normalize ( lerp (N, V, lerpFactor ));
+}
+
+
+
+
+
+float3 F_Schlick(float3 f0, float f90, float u)
+{
+	return f0 + (f90 - f0) * pow(1.0f - u, 5.0f);
+}
+
+float V_SmithGGXCorrelated(float NdotV, float NdotL, float alphaG)
+{
+	// Original formulation of G_SmithGGX Correlated
+	// lambda_v = (-1 + sqrt ( alphaG2 * (1 - NdotL2 ) / NdotL2 + 1)) * 0.5f;
+	// lambda_l = (-1 + sqrt ( alphaG2 * (1 - NdotV2 ) / NdotV2 + 1)) * 0.5f;
+	// G_SmithGGXCorrelated = 1 / (1 + lambda_v + lambda_l );
+	// V_SmithGGXCorrelated = G_SmithGGXCorrelated / (4.0 f * NdotL * NdotV );
+
+	// This is the optimize version
+	float alphaG2 = alphaG * alphaG;
+	// Caution : the " NdotL *" and " NdotV *" are explicitely inversed , this is not a mistake .
+	float Lambda_GGXV = NdotL * sqrt ((-NdotV * alphaG2 + NdotV ) * NdotV + alphaG2 );
+	float Lambda_GGXL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL ) * NdotL + alphaG2 );
+
+	return 0.5f / ( Lambda_GGXV + Lambda_GGXL );
+}
+
+float D_GGX(float NdotH, float m)
+{
+	// Divide by PI is apply later
+	float m2 = m * m;
+	float f = (NdotH * m2 - NdotH) * NdotH + 1;
+	return m2 / (f * f);
+}
+
+float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH, float linearRoughness)
+{
+	float energyBias = lerp (0, 0.5, linearRoughness);
+	float energyFactor = lerp (1.0, 1.0 / 1.51, linearRoughness);
+	float fd90 = energyBias + 2.0 * LdotH * LdotH * linearRoughness;
+	float3 f0 = float3 (1.0f, 1.0f, 1.0f);
+	float lightScatter = F_Schlick(f0, fd90, NdotL).r;
+	float viewScatter = F_Schlick(f0, fd90, NdotV).r;
+
+	return lightScatter * viewScatter * energyFactor;
+}
+
+float3 accurateLinearToSRGB (in float3 linearCol )
+{
+	float3 sRGBLo = linearCol * 12.92;
+	float3 sRGBHi = ( pow( abs ( linearCol ), 1.0/2.4) * 1.055) - 0.055;
+	float3 sRGB = ( linearCol <= 0.0031308) ? sRGBLo : sRGBHi;
+	return sRGB;
+}
+
+float3 accurateSRGBToLinear (in float3 sRGBCol )
+{
+	float3 linearRGBLo = sRGBCol / 12.92;
+	float3 linearRGBHi = pow(( sRGBCol + 0.055) / 1.055, 2.4);
+	float3 linearRGB = ( sRGBCol <= 0.04045) ? linearRGBLo : linearRGBHi;
+	return linearRGB;
+}
+
+float convertEV100ToExposure( float EV100 )
+{
+	// Compute the maximum luminance possible with H_sbs sensitivity
+	// maxLum = 78 / ( S * q ) * N^2 / t
+	// = 78 / ( S * q ) * 2^ EV_100
+	// = 78 / (100 * 0.65) * 2^ EV_100
+	// = 1.2 * 2^ EV
+	// Reference : http :// en. wikipedia . org / wiki / Film_speed
+	float maxLuminance = 1.2f * pow (2.0f, EV100 );
+
+	return 1.0f / maxLuminance;
+}
+
+float computeEV100 ( float aperture , float shutterTime , float ISO )
+{
+	// EV number is defined as:
+	// 2^ EV_s = N^2 / t and EV_s = EV_100 + log2 (S /100)
+	// This gives
+	// EV_s = log2 (N^2 / t)
+	// EV_100 + log2 (S /100) = log2 (N^2 / t)
+	// EV_100 = log2 (N^2 / t) - log2 (S /100)
+	// EV_100 = log2 (N^2 / t . 100 / S)
+	return log2 ( sqrt ( aperture ) / shutterTime * 100 / ISO );
+}
+
+float SampleShadowCascade(in float3 shadowPosition, in uint shadowIndex)
+{
+	//float3 shadowPosition = mul(float4(positionWS, 1.0f), shadowMatrix).xyz;
+	float2 shadowTexCoord = float2(0.5f*shadowPosition.x, -0.5f*shadowPosition.y) + 0.5f;
+	float shadowDepth = shadowPosition.z;
+
+	// Edge tap smoothing
+	const int Radius = 2;
+	const float ShadowMapSize = 2048.0f*2 / 4;
+	const int NumSamples = (Radius * 2 + 1) * (Radius * 2 + 1);
+
+	float2 fracs = frac(shadowTexCoord.xy * ShadowMapSize);
+	float leftEdge = 1.0f - fracs.x;
+	float rightEdge = fracs.x;
+	float topEdge = 1.0f - fracs.y;
+	float bottomEdge = fracs.y;
+
+	float shadowVisibility = 0.0f;
+
+	[unroll(NumSamples)]
+	for (int y = -Radius; y <= Radius; y++)
+	{
+		[unroll(NumSamples)]
+		for (int x = -Radius; x <= Radius; x++)
+		{
+			float2 offset = float2(x, y) * (1.0f / ShadowMapSize);
+			float2 sampleCoord = shadowTexCoord + offset;
+			float sample = shadowMaps.SampleCmp(ShadowSampler, float3(sampleCoord, shadowIndex), shadowDepth).x;
+
+			float xWeight = 1;
+			float yWeight = 1;
+
+			if(x == -Radius)
+				xWeight = leftEdge;
+			else if(x == Radius)
+				xWeight = rightEdge;
+
+			if(y == -Radius)
+				yWeight = topEdge;
+			else if(y == Radius)
+				yWeight = bottomEdge;
+
+			shadowVisibility += sample * xWeight * yWeight;
+		}
+	}
+
+	shadowVisibility  /= NumSamples;
+	//shadowVisibility *= 1.5f;
+
+	return shadowVisibility;
+}
+
+float3 FresnelSchlickWithRoughness(float3 SpecularColor,float3 E,float3 N,float Gloss)
+{
+    return SpecularColor + (max(Gloss, SpecularColor) - SpecularColor) * pow(1 - saturate(dot(E, N)), 5);
+}
+float3 SpecularEnvmap(float3 E,float3 N,float3 R,float3 SpecularColor, float Gloss)
+{
+    //float3 Envcolor = texCUBElod(EnvironmentTexture, float4(R, EnvMapMipmapScaleBias.x * Gloss + EnvMapMipmapScaleBias.y)).rgb;
+	float3 Envcolor = cubeMap.Sample(ColorMapSampler, R).rgb;
+    return FresnelSchlickWithRoughness(SpecularColor, E, N, Gloss) * Envcolor.rgb; // * EnvMapScaleAndModulate; // EnvMapScaleAndModulate is used to decompress range
+}
+
+struct PS_OUT
+{
+	float4 Color : SV_Target0;
+	float4 NormalRGB_DepthA : SV_Target1;
+	float4 EmissiveRGB_Unused : SV_Target2;
+};
+
+//-----------------------------------------------------------------------------------------
+// PixelShader: PSSceneMain
+//-----------------------------------------------------------------------------------------
+PS_OUT PS_main(PSIn input)
+{	
+	PS_OUT output = (PS_OUT)0;
+	float3 N = 0;
+
+	if(HasNormalMap == 1)
+	{
+		/*
+		float3 tangentNormal = normalMap.Sample(ColorMapSampler, input.TexCoord).xyz;
+
+		tangentNormal.xy = tangentNormal.xy * 2.0f - 1.0f;
+		tangentNormal.z = sqrt(1.0f - dot(tangentNormal.xy, tangentNormal.xy));
+		*/
+		float3 tangentNormal = normalize(normalMap.SampleLevel(ColorMapSampler, input.TexCoord, 0).rgb * 2.0f - 1);
+		
+		float3 Normal = normalize(input.NormalV);
+		float3 Tangent = normalize(input.TangentV.xyz - dot(input.TangentV.xyz, Normal) * Normal);
+		float3 Binormal = normalize(cross(Normal, Tangent) * input.TangentV.w);
+
+		float3x3 TBN = float3x3(Tangent,Binormal,Normal);
+
+		N = normalize(mul(tangentNormal, TBN));
+	}
+	else
+	{
+		N = normalize(input.NormalV);
+	}
+
+	float3 V = normalize(CamPosV - input.PosV);
+	float3 camNormalReflect = reflect(V, N);
+
+	float3 baseColor = colorMap.Sample(ColorMapSampler, input.TexCoord).rgb;
+	float metalness = metalTextureMap.Sample(ColorMapSampler, input.TexCoord).r;
+
+	float f90 = metalness; //
+	f90 = 0.16f * metalness * metalness;
+
+
+	//roughness same for both diffuse and specular, as in Frostbite
+	float EPSILON = 1e-5f;
+	float linearRoughness = saturate(roughnessMap.Sample(ColorMapSampler, input.TexCoord).r + EPSILON);
+	float roughness = pow(linearRoughness,2);
+		
+	float3 diffuseColor = lerp(baseColor.rgb, 0.0f.rrr, metalness.r);
+	float3 f0 = lerp(0.03f.rrr, baseColor.rgb, metalness.r);
+	float3 specularColor = lerp(f0, baseColor.rgb, metalness.r);
+
+
+	float3 viewPos = input.PosV;
+
+	float4 diffuseLight = 0;
+    float4 specularLight = 0;
+
+	float NdotV = abs(dot(N, V)) + EPSILON;
+
+	for(uint lightIndex = 0; lightIndex < AreaLightCount; lightIndex++)
+	{
+		AreaLight light = gAreaLights[lightIndex];
+
+		float3 lightColor = light.Color.rgb;
+
+		float lightRadius = light.Type_Radius_Width_Height.y;
+		float lightWidth = light.Type_Radius_Width_Height.z;
+		float lightHeight = light.Type_Radius_Width_Height.w;
+		float3 lightUp = light.Up;
+		float3 lightLeft = light.Left;
+
+		float3 lightPos = light.Position;
+
+
+		
+		float halfWidth = lightWidth * 0.5;
+		float halfHeight = lightHeight * 0.5;
+		float3 p0 = lightPos + lightLeft * -halfWidth + lightUp * halfHeight;
+		float3 p1 = lightPos + lightLeft * -halfWidth + lightUp * -halfHeight;
+		float3 p2 = lightPos + lightLeft * halfWidth + lightUp * -halfHeight;
+		float3 p3 = lightPos + lightLeft * halfWidth + lightUp * halfHeight;
+
+		float3 L = normalize(normalize(p0 - viewPos ) + 
+					normalize(p1 - viewPos ) + 
+					normalize(p2 - viewPos ) + 
+					normalize(p3 - viewPos ) + 
+					normalize(lightPos - viewPos ));
+
+
+
+		float3 H = normalize(V + L);
+		float LdotH = saturate(dot(L, H));
+		float NdotH = saturate(dot(N, H));
+		float NdotL = saturate(dot(N, L));
+		float VdotH = saturate(dot(V, H));
+
+		float lightPower = 0;
+
+		if(dot(viewPos - light.Position, normalize(light.Direction) ) > 0)
+		{
+			float halfWidth = lightWidth * 0.5;
+			float halfHeight = lightHeight * 0.5;
+			float3 p0 = lightPos + lightLeft * -halfWidth + lightUp * halfHeight;
+			float3 p1 = lightPos + lightLeft * -halfWidth + lightUp * -halfHeight;
+			float3 p2 = lightPos + lightLeft * halfWidth + lightUp * -halfHeight;
+			float3 p3 = lightPos + lightLeft * halfWidth + lightUp * halfHeight;
+			float solidAngle = rectangleSolidAngle(viewPos, p0, p1, p2, p3);
+
+			float illuminance = solidAngle * 0.2 * (
+				saturate(dot(normalize(p0 - viewPos ), N)) +
+				saturate(dot(normalize(p1 - viewPos ), N)) +
+				saturate(dot(normalize(p2 - viewPos ), N)) +
+				saturate(dot(normalize(p3 - viewPos ), N)) +
+				saturate(dot(normalize(lightPos - viewPos), N)));
+
+			lightPower = illuminance * light.Intensity / (lightWidth * lightHeight * PI);
+		}
+
+
+		float4 posLightH = mul(float4(input.PosW,1), light.ViewProjection);
+		// Project the texture coords and scale/offset to [0, 1].
+		posLightH.xyz /= posLightH.w;
+		float shadowCoeff = SampleShadowCascade(posLightH.xyz, lightIndex);
+
+		//const float ambientConst = 0.05f;
+
+		//if(lightIndex > 3) shadowCoeff = 1;
+
+		lightPower *= shadowCoeff;
+
+	
+
+		// DIFFUSE
+		float Fd = Fr_DisneyDiffuse(NdotV, NdotL, LdotH , linearRoughness) / Pi;
+
+        diffuseLight += float4(Fd.xxx*lightColor*lightPower*diffuseColor.rgb, 1);
+
+		
+
+		float3 F = F_Schlick(f0, f90, LdotH);
+
+		float Vis = V_SmithGGXCorrelated(NdotV, NdotL, roughness);
+		float D = D_GGX(NdotH, roughness);
+
+		if(false)
+		{
+			float Fr = D * F * Vis / Pi;
+			specularLight += float4(Fr * specularColor * lightColor*lightPower, 1);
+		}
+		else
+		{
+			float3 Fr = D * F * Vis / Pi;
+			specularLight += float4(Fr * lightColor * lightPower, 1);
+		}
+	}
+	
+
+	float3 diffuse = saturate(diffuseLight);
+	//diffuse += baseColor * cubemapSampleAmbient * 0.25f;
+
+	float3 specular = specularLight;
+
+
+	// Composite
+    float4 finalColor = float4(saturate(diffuse), 1);
+	finalColor.rgb += saturate(specular);
+
+	//float4 cubemapSampleAmbient = cubeMap.Sample(ColorMapSampler, N);
+	//finalColor.rgb += baseColor.rgb * cubemapSampleAmbient.rgb * 0.1f;
+
+
+
+
+	float3 E = CamPosV;
+	float3 R = reflect(V, N);
+	float3 se = SpecularEnvmap(E, N, R, specularColor, 0.15f);
+
+	/*
+	float3 R = reflect(V, N);
+	float4 cubemapSampleSpecular = cubeMap.Sample(ColorMapSampler, R);
+
+	float normDotCam = max(dot(lerp(input.NormalV, N, max(dot(input.NormalV, V), 0)), V), 0);
+	float3 schlickFresnel = saturate(f0 + (1 - f0)*pow(1 - normDotCam, 5));
+	finalColor.rgb = lerp(finalColor.rgb, cubemapSampleSpecular.rgb, schlickFresnel);
+	*/
+
+	float3 emissiveColor = emissiverMap.Sample(ColorMapSampler, input.TexCoord).rgb;
+
+	//emissive hack!?
+	finalColor.rgb *= 1 - ceil(emissiveColor);
+	finalColor.rgb += emissiveColor;	
+
+	output.Color = float4(finalColor.rgb, 1);
+	output.EmissiveRGB_Unused = float4(emissiveColor, 0);
+
+	return output;
+	
+	
+	/*
+	// usage with manual settings
+	float aperture = 1.4f;
+	float shutterTime = 1.0f / 125.0f;
+	float ISO = 100;
+	float EV100 = computeEV100 ( aperture , shutterTime , ISO );
+	float exposure = convertEV100ToExposure ( EV100 );
+
+	exposure = 1;
+
+	//luminance = baseColor;
+
+	output.Color = float4(max(luminance, 0.0001),1.0f);
+
+	//float3 normalView = normalize(mul(float4(worldNormal,0), matView));
+	//float4 posView = normalize(mul(float4(worldPos,1), matView));
+	
+	N = normalize(cross(ddx(viewPos.xyz), ddy(viewPos.xyz)));
+	output.NormalRGB_DepthA = float4(N, viewPos.z);
+
+	return output;
+	*/
+}
+
+
+/*
+	//linearRoughness = roughness;
+	//sun
+	if(false)
+	{
+		float3 sunDirection = normalize(float3(1,1,1));
+		float sunAngularRadius = 0.0094247779608f;
+		float sunIlluminanceInLux = 100000 * 0.0002f;
+		float R = worldPos;
+
+		float3 D = sunDirection;
+		float r = sin( sunAngularRadius ); // Disk radius
+		float d = cos( sunAngularRadius ); // Distance to disk
+
+		// Closest point to a disk ( since the radius is small , this is a good approximation
+		float DdotR = dot(D, R);
+		float3 S = R - DdotR * D;
+		float3 L = DdotR < d ? normalize(d * D + normalize(S) * r) : R;
+
+		// Diffuse and specular evaluation
+		illuminance += sunIlluminanceInLux * saturate(dot(N, D));
+
+		// D: Diffuse direction use for diffuse lighting
+		// L: Specular direction use with specular lighting
+
+		float Fd = 0, Fr = 0;
+		//void BSDF(float3 V, float L, float N, float roughness, float3 f0, out float Fr, out float Fd)
+		
+		reflectance = metalness.r;
+		float3 f0 = ((0.16f * reflectance * reflectance) * (1-metalness)) + (baseColor * metalness); 
+		
+		BSDF(V, L, N, linearRoughness, f0, Fr, Fd);
+
+		float3 Diffuse = Fd * baseColor * illuminance;
+		float3 Specular = Fr * reflectance * illuminance;
+
+		luminance += Diffuse + Specular;
+	}
+	*/
+
+
+/*
+TubeLight tube;
+
+tube.P0 = float3(-10,10, -6.2);
+tube.P1 = float3(10,-10.0, -6.2);
+tube.Left = float3(0,1,0);
+tube.Width = 0.1;
+tube.Radius = 10;
+
+illuminance = tubeIlluminance(tube, input.PosW, N);
+		
+
+		
+// On the CPU
+float3 lightForward = -planeNormal;
+float halfOuterAngle = PI * 0.8f;
+float discRadius = 2.5;
+float3 virtualPos = light.Position + lightForward * ( discRadius / tan( halfOuterAngle ));
+		
+
+// On the GPU
+// Attenuate with a virtual position which is the light position shifted
+// in opposite light direction by an amount based on the outer angle .
+attenuation = getAngleAtt( normalize( virtualPos - input.PosW ), lightForward , lightAngleScale , lightAngleOffset );
+*/
