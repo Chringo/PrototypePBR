@@ -83,7 +83,7 @@ float3 schlick(float3 f0, float f90, float u) //f0 is spec/metalness, f90 is spe
 
 float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float linearRoughness)
 {
-    float energyBias = lerp(0, 0.05, linearRoughness);
+    float energyBias = lerp(0, 0.5, linearRoughness);
     float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
     float fd90 = energyBias + 2.0 * LdotH * LdotH * linearRoughness;
     float3 f0 = float3(1.0, 1.0, 1.0);
@@ -149,9 +149,9 @@ float4 PS_main(VS_OUT input) : SV_Target
     float4 specularLight = float4(0, 0, 0, 0);
 
     LIGHT light[3]; 
-    light[0] = initCustomLight(float3(0.0, -0.8, 1.3), float3(1.0, 1.0, 1.0));
-    light[1] = initCustomLight(float3(0.0, 0.0, 1.5), float3(1.0, 1.0, 1.0));
-    light[2] = initCustomLight(float3(0.5, 1.2, 1.0), float3(1.0, 1.0, 1.0));
+    light[0] = initCustomLight(float3(0.0, -0.8, -1.3), float3(1.0, 1.0, 1.0));
+    light[1] = initCustomLight(float3(0.0, 0.0, -1.5), float3(1.0, 1.0, 1.0));
+    light[2] = initCustomLight(float3(0.5, 1.2, -1.0), float3(1.0, 1.0, 1.0));
 
     //SAMPLING
     float4 wPosSamp = wPosTex.Sample(pointSampler, input.UV);
@@ -168,14 +168,14 @@ float4 PS_main(VS_OUT input) : SV_Target
     f90 = 0.16f * metalness * metalness;
 
     //ROUGHNESS (is same for both diffuse and specular, ala forstbite)
-    float linearRough = saturate(roughSamp.r + EPSILON);
-    float roughness = linearRough * linearRough;
+    float3 linearRough = (saturate(roughSamp.rgb + EPSILON));
+    float roughness =  linearRough * linearRough;
     float sRGBrough = linearToSRGB(roughSamp).r;
 
     //DIFFUSE & SPECULAR
-    float3 diffuseColor = lerp(colorSamp.rgb, 0.0f.rrr, metalness.r);
-    float3 f0 = lerp(0.0F.rrr, colorSamp.rgb, metalness.r);
-    float3 specularColor = lerp(f0, colorSamp.rgb, metalness.r);
+    float3 diffuseColor = lerp(colorSamp.rgb, 0.0f.rrr, metalness);
+    float3 f0 = lerp(0.03F.rrr, colorSamp.rgb, metalness);
+    float3 specularColor = lerp(f0, colorSamp.rgb, metalness);
 
     float3 V = normalize(camDir); //camDir
     float NdotV = abs(dot(N, V)) + EPSILON;
@@ -188,10 +188,10 @@ float4 PS_main(VS_OUT input) : SV_Target
         float3 H = normalize(V + L);
         float lightPower = 0;
 
-        float LdotH = saturate(dot(L, H));
-        float NdotH = saturate(dot(N, H));
-        float NdotL = saturate(dot(N, L));
-        float VdotH = saturate(dot(V, H));
+        float LdotH = saturate((dot(L, H)));
+        float NdotH = saturate(abs(dot(N, H)));
+        float NdotL = saturate((dot(N, L)));
+        float VdotH = saturate((dot(V, H)));
 
 
         
@@ -200,12 +200,12 @@ float4 PS_main(VS_OUT input) : SV_Target
         //else //lights with no direction
 
 
-        lightPower = 1.0f; //could add falloff factor
+        lightPower = 1.00f; //could add falloff factor
         
         //DO SHADOW STUFF HERE
 
         //DIFFUSE
-        float fd = DisneyDiffuse(NdotV, NdotL, LdotH, linearRough); //roughness should be linear
+        float fd = DisneyDiffuse(NdotV, NdotL, LdotH, linearRough.r); //roughness should be linear
         diffuseLight += float4(fd.xxx * light[i].lightColor * lightPower * diffuseColor.rgb, 1);
 
         //SPECULAR
@@ -213,21 +213,24 @@ float4 PS_main(VS_OUT input) : SV_Target
         float vis = V_SmithGGXCorrelated(NdotV, NdotL, roughness); //roughness should be sRGB
         float d = GGX(NdotH, roughness); //roughness should be sRGB
 
-
         float3 fr = d * f * vis / Pi;
 
-        
         specularLight += float4(fr * specularColor * light[i].lightColor * lightPower, 1);
 
-
+        //return vis.rrrr;
     }
+
+
+    //COMPOSITE
     float3 diffuse = saturate(diffuseLight).rgb;
     float3 specular = specularLight.rgb;
 
-    //COMPOSITE
+    //float4 finalColor = float4(specular, 1);
     float4 finalColor = float4(saturate(diffuse), 1);
-    finalColor += float4(saturate(specular), 1);
+    finalColor.rgb += saturate(specular);
 
+
+    
     return finalColor;
 
 
