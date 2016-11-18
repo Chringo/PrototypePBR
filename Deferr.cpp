@@ -227,55 +227,6 @@ void Deferr::initBuffers()
 
 void Deferr::initTexViews()
 {
-	//HRESULT hr;
-	//D3D11_TEXTURE2D_DESC textureDesc;
-	//D3D11_RENDER_TARGET_VIEW_DESC renderTargetDesc;
-	//D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
-
-
-	//ZeroMemory(&textureDesc, sizeof(textureDesc));
-	////Set up the render texture desciption
-
-	//textureDesc.Width = (UINT)WIN_WIDTH;
-	//textureDesc.Height = (UINT)WIN_HEIGHT;
-	//textureDesc.MipLevels = 1;
-	//textureDesc.ArraySize = 1;
-	//textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	//textureDesc.SampleDesc.Count = 1;
-	//textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	//textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	//textureDesc.CPUAccessFlags = 0;
-	//textureDesc.MiscFlags = 0;
-
-	////Create the render target Texture
-
-	//hr = gDevice->CreateTexture2D(&textureDesc, NULL, &T2Ds[pass]);
-	//if (FAILED(hr))
-	//	MessageBox(NULL, L"Failed to create deferr Texture2D", L"Error", MB_ICONERROR | MB_OK);
-
-	////set up description for render target view
-	//ZeroMemory(&renderTargetDesc, sizeof(renderTargetDesc));
-	//renderTargetDesc.Format = textureDesc.Format;
-	//renderTargetDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	//renderTargetDesc.Texture2D.MipSlice = 0;
-
-	////Create render target
-
-	//hr = gDevice->CreateRenderTargetView(T2Ds[pass], &renderTargetDesc, &RTVs[pass]);
-	//if (FAILED(hr))
-	//	MessageBox(NULL, L"Failed to create deferr RTV", L"Error", MB_ICONERROR | MB_OK);
-
-	////Set up the shader resource view
-	//ZeroMemory(&resourceViewDesc, sizeof(resourceViewDesc));
-	//resourceViewDesc.Format = textureDesc.Format;
-	//resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	//resourceViewDesc.Texture2D.MostDetailedMip = 0;
-	//resourceViewDesc.Texture2D.MipLevels = 1;
-
-	////Create the resourceView;
-	//hr = gDevice->CreateShaderResourceView(T2Ds[pass], nullptr, &SRVs[pass]);
-	//if (FAILED(hr))
-	//	MessageBox(NULL, L"Failed to create deferr SRV", L"Error", MB_ICONERROR | MB_OK);
 
 
 	for (int pass = 0; pass < RTV_COUNT; pass++)

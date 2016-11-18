@@ -8,7 +8,7 @@ public:
 	Mesh(meshDesc&);
 	Mesh();
 	~Mesh();
-
+	void clear();
 	unsigned int getVertexCount() const;
 	ID3D11Buffer * getVertexBuffer() const;
 	ID3D11Buffer * getIndexBuffer() const;

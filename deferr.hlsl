@@ -51,12 +51,12 @@ struct GS_OUT
 
 struct PS_OUT
 {
-    float4 wPosition : SV_Target0;
-    float3 color : SV_Target1;
-    float3 normal : SV_Target2;
-    float3 metalness : SV_Target3;
-    float3 roughness : SV_Target4;
-    float3 AO : SV_Target5;
+    float3 color : SV_Target0;
+    float3 metalness : SV_Target1;
+    float3 roughness : SV_Target2;
+    float3 AO : SV_Target3;
+    float3 normal : SV_Target4;
+    float4 wPosition : SV_Target5;
 };
 
 float3 normalToWorldSpace(float3 normalMapSample, float3 normal, float3 tangent, float3 biTangent) //Function for normal mapping  
@@ -150,10 +150,6 @@ PS_OUT PS_main(GS_OUT input)
     output.roughness = roughTex.Sample(pointSampler, input.UV);
     output.AO = aoTex.Sample(pointSampler, input.UV);
    
-
-
     return output;
-
-  
 };
 

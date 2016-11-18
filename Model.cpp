@@ -2,6 +2,12 @@
 
 
 
+void Model::updateWorld()
+{
+
+	
+}
+
 void Model::map(ID3D11DeviceContext* gDeviceContext)
 {
 	D3D11_MAPPED_SUBRESOURCE gMappedResource;
@@ -17,6 +23,10 @@ Model::Model(ID3D11Device* gDevice)
 {
 	this->vertexBuffer	= nullptr;
 	this->worldMatrix = DirectX::XMMatrixIdentity();
+	this->rotation = DirectX::XMMatrixIdentity();
+	this->scale = DirectX::XMMatrixIdentity();
+	this->translation = DirectX::XMMatrixTranspose((DirectX::XMMatrixIdentity()));
+
 
 	D3D11_BUFFER_DESC bufferDesc;
 	memset(&bufferDesc, 0, sizeof(bufferDesc));
@@ -25,11 +35,17 @@ Model::Model(ID3D11Device* gDevice)
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bufferDesc.ByteWidth = sizeof(worldMat);
 	gDevice->CreateBuffer(&bufferDesc, NULL, &cbW);
+	DirectX::XMMatrixTranspose(worldMatrix);
+
+	translation = DirectX::XMMatrixTranspose(DirectX::XMMatrixMultiply(translation, DirectX::XMMatrixTranslation(0.0, -4.0, 1.0)));
 }
 
 Model::~Model()
 {
-
+	for each (Mesh m in Meshes)
+	{
+		m.clear();
+	}
 }
 
 void Model::appendMesh(meshDesc & mDesc)
@@ -45,11 +61,15 @@ void Model::appendMesh(meshDesc & mDesc)
 void Model::update(ID3D11DeviceContext* gDeviceContext)
 {
 	//MAEK TRANSFORMATIONS TO WORLDMATRIX HERE
-	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixRotationY(0.00005f));
-	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixRotationX(0.00005f));
+	rotation = DirectX::XMMatrixMultiply(rotation, DirectX::XMMatrixRotationY(0.00005f));
+	//rotation = DirectX::XMMatrixMultiply(rotation, DirectX::XMMatrixRotationX(0.00005f));
+	
+	scale = DirectX::XMMatrixTranspose(scale);
+
+	//updateWorld();
 
 	//STORE TRANSFORMATIONS HERE
-	DirectX::XMStoreFloat4x4(&wm.world, worldMatrix);
+	DirectX::XMStoreFloat4x4(&wm.world, scale * translation *  rotation * worldMatrix);
 
 	//THEN MAP CBUFFER
 	map(gDeviceContext);

@@ -17,18 +17,21 @@ private:
 
 	worldMat wm;
 
-	DirectX::XMMATRIX worldMatrix;
+	
+
+	DirectX::XMMATRIX worldMatrix, rotation, scale, translation;
 	std::vector<Vertex1>vertexData1;
 
 	std::vector<Mesh> Meshes;
 	ID3D11Buffer* cbW;
 	ID3D11Buffer* vertexBuffer;
 
+	void updateWorld();
 	void map(ID3D11DeviceContext* gDeviceContext);
 	Model();
 public:
 	Model(ID3D11Device* gDevice);
-	virtual ~Model();
+	~Model();
 
 	void appendMesh(meshDesc & mDesc);
 	void update(ID3D11DeviceContext* gDeviceContext);

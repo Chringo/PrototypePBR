@@ -86,6 +86,12 @@ Mesh::~Mesh()
 	//delete indexData;
 }
 
+void Mesh::clear()
+{
+	delete this->vertexData;
+	delete this->indexData;
+}
+
 unsigned int Mesh::getVertexCount() const
 {
 	return this->indexCount;
