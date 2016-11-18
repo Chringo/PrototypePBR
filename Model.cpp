@@ -55,6 +55,11 @@ void Model::update(ID3D11DeviceContext* gDeviceContext)
 	map(gDeviceContext);
 }
 
+unsigned int Model::getMeshVertexCount(int meshIndex) const
+{
+	return Meshes.at(meshIndex).getVertexCount();
+}
+
 ID3D11Buffer* Model::getVertexBuffer() const
 {
 	return this->vertexBuffer;

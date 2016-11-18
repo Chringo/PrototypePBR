@@ -41,9 +41,6 @@ private:
 	ID3D11InputLayout* vertexLayout;
 	
 	Camera * camera;
-
-	void draw();
-	void defPass();
 	
 	
 public:

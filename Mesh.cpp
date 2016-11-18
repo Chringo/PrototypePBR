@@ -86,6 +86,11 @@ Mesh::~Mesh()
 	//delete indexData;
 }
 
+unsigned int Mesh::getVertexCount() const
+{
+	return this->indexCount;
+}
+
 ID3D11Buffer * Mesh::getVertexBuffer() const
 {
 	return this->vertexBuffer;

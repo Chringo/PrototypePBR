@@ -9,6 +9,7 @@ public:
 	Mesh();
 	~Mesh();
 
+	unsigned int getVertexCount() const;
 	ID3D11Buffer * getVertexBuffer() const;
 	ID3D11Buffer * getIndexBuffer() const;
 private:

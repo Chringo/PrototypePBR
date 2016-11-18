@@ -149,9 +149,9 @@ float4 PS_main(VS_OUT input) : SV_Target
     float4 specularLight = float4(0, 0, 0, 0);
 
     LIGHT light[3]; 
-    light[0] = initCustomLight(float3(0.0, -0.8, -1.3), float3(1.0, 1.0, 1.0));
-    light[1] = initCustomLight(float3(0.0, 0.0, -1.5), float3(1.0, 1.0, 1.0));
-    light[2] = initCustomLight(float3(0.5, 1.2, -1.0), float3(1.0, 1.0, 1.0));
+    light[0] = initCustomLight(float3(0.0, -0.8, -1.3), float3(1., 1., 1.));
+    light[1] = initCustomLight(float3(0.0, 0.0, -1.5), float3(1., 1., 1.));
+    light[2] = initCustomLight(float3(0.5, 1.2, -1.0), float3(1., 1., 1.));
 
     //SAMPLING
     float4 wPosSamp = wPosTex.Sample(pointSampler, input.UV);
@@ -177,6 +177,7 @@ float4 PS_main(VS_OUT input) : SV_Target
     float3 f0 = lerp(0.03F.rrr, colorSamp.rgb, metalness);
     float3 specularColor = lerp(f0, colorSamp.rgb, metalness);
 
+    N = normalize(N);
     float3 V = normalize(camDir); //camDir
     float NdotV = abs(dot(N, V)) + EPSILON;
     

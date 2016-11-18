@@ -10,7 +10,8 @@ public:
 	void firstPass(ID3D11Buffer * vertexBuffer, 
 		ID3D11Buffer * indexBuffer,
 		ID3D11Buffer * modelWorldCb,
-		ID3D11Buffer * cameraVpCb
+		ID3D11Buffer * cameraVpCb,
+		unsigned int vertexCount
 	);
 	void finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV, ID3D11Buffer * modelWorldCb);
 

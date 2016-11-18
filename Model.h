@@ -33,6 +33,7 @@ public:
 	void appendMesh(meshDesc & mDesc);
 	void update(ID3D11DeviceContext* gDeviceContext);
 
+	unsigned int getMeshVertexCount(int meshIndex) const;
 	ID3D11Buffer* getVertexBuffer() const;
 	ID3D11Buffer* getConstantBufferW() const;
 

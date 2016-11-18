@@ -278,7 +278,7 @@ bool Engine::initialize(HWND* window)
 	FLDesc.gDeviceContext = gDeviceContext;
 	fileLoader = new FileLoader(FLDesc);
 
-	fileLoader->loadFile("./BBF/knulla.BBF");
+	fileLoader->loadFile("./BBF/TESTPBRMODEL.BBF");
 
 	camera = new Camera(gDevice, gDeviceContext);
 
@@ -372,7 +372,9 @@ void Engine::render()
 	deferr->firstPass(fileLoader->getVertexBuffer(), 
 		fileLoader->getIndexBuffer(),
 		fileLoader->getModelVec()->at(0)->getConstantBufferW(), 
-		camera->getConstantBufferVP());
+		camera->getConstantBufferVP(),
+		fileLoader->getModelVec()->at(0)->getMeshVertexCount(0)
+	);
 	//draw ze final pass
 	deferr->finalPass(gRenderTargetView, mDepthStencilView, fileLoader->getModelVec()->at(0)->getConstantBufferW());
 	//this->draw();
@@ -380,41 +382,3 @@ void Engine::render()
 	this->gSwapChain->Present(0, 0);
 }
 
-void Engine::defPass()
-{
-
-}
-
-void Engine::draw()
-{
-	float black[4] = { 1.0f,1.0f,1.0f, 1.0f };
-	this->gDeviceContext->ClearRenderTargetView(this->gRenderTargetView, black);
-	this->gDeviceContext->ClearDepthStencilView(this->mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	this->gDeviceContext->IASetInputLayout(this->inputLayout);
-	this->gDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	this->gDeviceContext->VSSetShader(this->vertexShader, nullptr, 0);
-	this->gDeviceContext->HSSetShader(nullptr, nullptr, 0);
-	this->gDeviceContext->DSSetShader(nullptr, nullptr, 0);
-	this->gDeviceContext->GSSetShader(nullptr, nullptr, 0);
-	this->gDeviceContext->PSSetShader(this->pixelShader, nullptr, 0);
-
-	ID3D11Buffer* vpBuffer = camera->getConstantBufferVP();
-	ID3D11Buffer* wBuffer = fileLoader->getModelVec()[0][0]->getConstantBufferW();
-
-	this->gDeviceContext->VSSetConstantBuffers(0, 1, &wBuffer);
-	this->gDeviceContext->VSSetConstantBuffers(1, 1, &vpBuffer);
-
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-
-	ID3D11Buffer* vBuffer = nullptr;
-	vBuffer = fileLoader->getVertexBuffer();
-
-	this->gDeviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
-	this->gDeviceContext->IASetIndexBuffer(fileLoader->getIndexBuffer(), DXGI_FORMAT_R32_UINT, offset);
-
-	this->gDeviceContext->DrawIndexed(36, 0, 0);
-	HRESULT result = this->gSwapChain->Present(0, 0);
-}

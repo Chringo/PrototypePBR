@@ -26,7 +26,7 @@ FileLoader::~FileLoader()
 void FileLoader::loadFile(char * filePath) //creates a renderable model from a BBF file
 {
 	Model * model = new Model(desc.gDevice);
-	infile.open(filePath);
+	infile.open(filePath, std::fstream::binary);
 
 	MainHeader mainHeader;
 	infile.read((char*)&mainHeader, sizeof(MainHeader));
