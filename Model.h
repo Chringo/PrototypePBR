@@ -46,5 +46,8 @@ public:
 	ID3D11Buffer * getMVertexBuffer() const;
 	//load from file
 	//initialize
+
+	bool hasSkeleton;
+	std::vector<JointHeader> jointList;
 };
 

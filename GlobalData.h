@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <vector>
 
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
@@ -35,13 +36,15 @@ struct Vertex2
 struct MainHeader
 {
 	unsigned int meshes;
+	unsigned int numOfMats;
 };
 
 struct MeshHeader
 {
 	unsigned int vertices;
 	unsigned int indexLength;
-	double transformationMatrix[16];
+	//double transformationMatrix[16];
+	unsigned int jointCount;
 	bool skeleton;
 };
 
@@ -56,6 +59,44 @@ struct Vertex
 	DirectX::XMFLOAT3 normal;
 	DirectX::XMFLOAT3 tangent;
 	DirectX::XMFLOAT2 UV;
+};
+
+struct SkelVertex
+{
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT3 normal;
+	DirectX::XMFLOAT3 tangent;
+	DirectX::XMFLOAT2 UV;
+	DirectX::XMFLOAT4 weights;
+	DirectX::XMINT4 influences;
+};
+
+struct BoneMatrixPalette
+{
+	DirectX::XMFLOAT4X4 boneMatrix;
+};
+
+struct KeyframeHeader
+{
+	float timeValue;
+	float translation[3];
+	float quaternion[4];
+	float scale[3];
+};
+
+struct AnimationStateHeader
+{
+	unsigned int keyFrameCount;
+	std::vector<KeyframeHeader> keyFrames;
+};
+
+struct JointHeader
+{
+	float bindPose[16];
+	int jointIndex;
+	int parentIndex;
+	unsigned int animStateCount;
+	std::vector<AnimationStateHeader> animationStates;
 };
 
 struct meshDesc

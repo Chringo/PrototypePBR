@@ -10,7 +10,7 @@ Mesh::Mesh(meshDesc &mDesc)
 	this->indexData = mDesc.indexData;
 	this->vertexCount = mDesc.vertexCount;
 	this->indexCount = mDesc.indexCount;
-	this->transMat = mDesc.transMat;
+	//this->transMat = mDesc.transMat;
 
 	//for (int i = 0; i < this->vertexCount; i++)
 	//{
