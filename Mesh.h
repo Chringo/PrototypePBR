@@ -13,6 +13,7 @@ public:
 	ID3D11Buffer * getIndexBuffer() const;
 private:
 	Vertex * vertexData;
+	SkelVertex * skelVertexData;
 	Index * indexData;
 	unsigned int vertexCount;
 	unsigned int indexCount;

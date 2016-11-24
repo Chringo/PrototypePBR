@@ -23,6 +23,7 @@ private:
 	std::ifstream infile;
 	std::vector<Model*> models;
 	Vertex ** vertexData;
+	SkelVertex ** skelVertexData;
 	Index ** indexData;
 };
 
