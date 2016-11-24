@@ -138,7 +138,7 @@ float4 PS_main(VS_OUT input) : SV_Target
 {
 
    
-    float3 camPos = float3(0.0f, 0.0f, -4.5f);
+    float3 camPos = float3(0.0f, 0.0f, -1.5f);
     float3 camDir = float3(0.0f, 0.0f, 1.0f);
 
     uint lightCount = 3;
@@ -206,7 +206,7 @@ float4 PS_main(VS_OUT input) : SV_Target
         //DO SHADOW STUFF HERE
 
         //DIFFUSE
-        float fd = DisneyDiffuse(NdotV, NdotL, LdotH, linearRough.r) / Pi; //roughness should be linear
+        float fd = DisneyDiffuse(NdotV, NdotL, LdotH, linearRough.r); //roughness should be linear
         diffuseLight += float4(fd.xxx * light[i].lightColor * lightPower * diffuseColor.rgb, 1);
 
         //SPECULAR

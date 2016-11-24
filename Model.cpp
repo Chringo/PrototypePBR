@@ -37,7 +37,7 @@ Model::Model(ID3D11Device* gDevice)
 	gDevice->CreateBuffer(&bufferDesc, NULL, &cbW);
 	DirectX::XMMatrixTranspose(worldMatrix);
 
-	translation = DirectX::XMMatrixTranspose(DirectX::XMMatrixMultiply(translation, DirectX::XMMatrixTranslation(0.0, -4.0, 1.0)));
+	//translation = DirectX::XMMatrixTranspose(DirectX::XMMatrixMultiply(translation, DirectX::XMMatrixTranslation(0.0, -4.0, 1.0)));
 }
 
 Model::~Model()

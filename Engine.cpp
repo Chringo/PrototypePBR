@@ -278,7 +278,7 @@ bool Engine::initialize(HWND* window)
 	FLDesc.gDeviceContext = gDeviceContext;
 	fileLoader = new FileLoader(FLDesc);
 
-	fileLoader->loadFile("./BBF/pillar.BBF");
+	fileLoader->loadFile("./BBF/Knulla.BBF");
 
 	camera = new Camera(gDevice, gDeviceContext);
 
