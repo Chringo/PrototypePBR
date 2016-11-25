@@ -5,7 +5,7 @@
 class Mesh
 {
 public:
-	Mesh(meshDesc&);
+	Mesh(meshDesc&, dynamicMesh&);
 	Mesh();
 	~Mesh();
 	void clear();

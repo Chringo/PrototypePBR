@@ -345,7 +345,7 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 
 	gDeviceContext->OMSetRenderTargets(RTV_COUNT, RTVs, DSV);
 
-	UINT vertexSize = sizeof(Vertex);
+	UINT vertexSize = sizeof(SkelVertex);
 	UINT indexSize = sizeof(Index);
 	UINT offset = 0;
 
@@ -375,8 +375,6 @@ void Deferr::firstPass(ID3D11Buffer * vertexBuffer, ID3D11Buffer * indexBuffer, 
 	this->gDeviceContext->DrawIndexed(vertexCount, 0, 0);
 
 	//gDeviceContext->OMSetRenderTargets(RTV_COUNT, 0, 0);
-
-
 }
 
 void Deferr::finalPass(ID3D11RenderTargetView * RTV, ID3D11DepthStencilView * DSV, ID3D11Buffer * modelWorldCb)

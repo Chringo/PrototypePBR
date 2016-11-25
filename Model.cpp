@@ -48,21 +48,22 @@ Model::~Model()
 	}
 }
 
-void Model::appendMesh(meshDesc & mDesc)
+void Model::appendMesh(meshDesc & mDesc, dynamicMesh & dmDesc)
 {
 	//here total model vertices etc can be stored.
 	//but i totally shouldnt... its just a test program....
 	//this->vertexCou..
 	//STHAP IT! DONT JOHN! 
-	Mesh mesh(mDesc);
+	Mesh mesh(mDesc, dmDesc);
 	Meshes.push_back(mesh);
 }
 
 void Model::update(ID3D11DeviceContext* gDeviceContext)
 {
 	//MAEK TRANSFORMATIONS TO WORLDMATRIX HERE
-	rotation = DirectX::XMMatrixMultiply(rotation, DirectX::XMMatrixRotationY(0.00005f));
+	//rotation = DirectX::XMMatrixMultiply(rotation, DirectX::XMMatrixRotationY(0.00005f));
 	//rotation = DirectX::XMMatrixMultiply(rotation, DirectX::XMMatrixRotationX(0.00005f));
+	rotation = DirectX::XMMatrixMultiply(rotation, DirectX::XMMatrixRotationX(0));
 	
 	scale = DirectX::XMMatrixTranspose(scale);
 

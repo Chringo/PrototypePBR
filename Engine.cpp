@@ -214,12 +214,37 @@ bool Engine::initialize(HWND* window)
 	ID3DBlob* errorBlob = nullptr;
 	//creating the vertexshader
 
+	//ID3DBlob* pVS = nullptr;
+	//D3DCompileFromFile(
+	//	L"Vertex.hlsl", // filename
+	//	nullptr,		// optional macros
+	//	nullptr,		// optional include files
+	//	"VS_main",		// entry point
+	//	"vs_5_0",		// shader model (target)
+	//	D3DCOMPILE_DEBUG,				// shader compile options
+	//	0,				// effect compile options
+	//	&pVS,			// double pointer to ID3DBlob		
+	//	nullptr			// pointer for Error Blob messages.
+	//					// how to use the Error blob, see here
+	//					// https://msdn.microsoft.com/en-us/library/windows/desktop/hh968107(v=vs.85).aspx
+	//	);
+
+	//result = gDevice->CreateVertexShader(pVS->GetBufferPointer(), pVS->GetBufferSize(), nullptr, &this->vertexShader);
+
+	////creating the input layout
+	//D3D11_INPUT_ELEMENT_DESC desc1[] =
+	//{
+	//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	//};
+
 	ID3DBlob* pVS = nullptr;
 	D3DCompileFromFile(
-		L"Vertex.hlsl", // filename
+		L"SkinnedVertex.hlsl", // filename
 		nullptr,		// optional macros
 		nullptr,		// optional include files
-		"VS_main",		// entry point
+		"Skinning_main",		// entry point
 		"vs_5_0",		// shader model (target)
 		D3DCOMPILE_DEBUG,				// shader compile options
 		0,				// effect compile options
@@ -227,7 +252,7 @@ bool Engine::initialize(HWND* window)
 		nullptr			// pointer for Error Blob messages.
 						// how to use the Error blob, see here
 						// https://msdn.microsoft.com/en-us/library/windows/desktop/hh968107(v=vs.85).aspx
-		);
+	);
 
 	result = gDevice->CreateVertexShader(pVS->GetBufferPointer(), pVS->GetBufferSize(), nullptr, &this->vertexShader);
 
@@ -236,7 +261,9 @@ bool Engine::initialize(HWND* window)
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "INFLUENCES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	result = gDevice->CreateInputLayout(desc1, ARRAYSIZE(desc1), pVS->GetBufferPointer(), pVS->GetBufferSize(), &this->inputLayout);
@@ -375,6 +402,8 @@ void Engine::render()
 		camera->getConstantBufferVP(),
 		fileLoader->getModelVec()->at(0)->getMeshVertexCount(0)
 	);
+
+	std::vector<Model*>* modelVector = fileLoader->getModelVec();
 	//draw ze final pass
 	deferr->finalPass(gRenderTargetView, mDepthStencilView, fileLoader->getModelVec()->at(0)->getConstantBufferW());
 	//this->draw();

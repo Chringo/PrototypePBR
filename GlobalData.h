@@ -108,6 +108,16 @@ struct meshDesc
 	unsigned int indexCount;
 };
 
+struct dynamicMesh
+{
+	fileLoaderDesc* FLDesc;
+	SkelVertex * skelVertexData;
+	Index * indexData;
+	DirectX::XMFLOAT4X4 transMat;
+	unsigned int vertexCount;
+	unsigned int indexCount;
+};
+
 struct quadVertex
 {
 	DirectX::XMFLOAT3 position;

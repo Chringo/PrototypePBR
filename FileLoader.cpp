@@ -17,7 +17,8 @@ FileLoader::~FileLoader()
 		delete m;
 	}
 
-	delete vertexData;
+	//delete vertexData;
+	delete skelVertexData;
 	delete indexData;
 }
 
@@ -34,7 +35,7 @@ void FileLoader::loadFile(char * filePath) //creates a renderable model from a B
 	{
 		MeshHeader meshHeader;
 		infile.read((char*)&meshHeader, sizeof(MeshHeader));
-	
+
 		/*float floatMat[16];
 		for (int i = 0; i < 16; i++)
 		{
@@ -80,23 +81,39 @@ void FileLoader::loadFile(char * filePath) //creates a renderable model from a B
 					const int keyframeCount = model->tempAnimations[jointIndex].animationCount[animIndex].keyFrameCount;
 
 					model->tempAnimations[jointIndex].animationData[animIndex].keyframes.resize(keyframeCount);
-					
+
 					infile.read((char*)model->tempAnimations[jointIndex].animationData[animIndex].keyframes.data(), sizeof(KeyframeHeader) * keyframeCount);
 				}
 			}
 		}
 
-		meshDesc mDesc;
-		mDesc.FLDesc = &desc;
-		mDesc.vertexData = vertexData[i];
-		mDesc.indexData = indexData[i];
-		//mDesc.transMat = DirectX::XMFLOAT4X4(floatMat);
-		mDesc.vertexCount = meshHeader.vertices;
-		mDesc.indexCount = meshHeader.indexLength;
+		if (meshHeader.skeleton == true)
+		{
+			meshDesc mDesc; dynamicMesh dynMDesc;
+			dynMDesc.FLDesc = &desc;
+			dynMDesc.skelVertexData = skelVertexData[i];
+			dynMDesc.indexData = indexData[i];
+			//mDesc.transMat = DirectX::XMFLOAT4X4(floatMat);
+			dynMDesc.vertexCount = meshHeader.vertices;
+			dynMDesc.indexCount = meshHeader.indexLength;
+
+			model->appendMesh(mDesc, dynMDesc);
+		}
+
+		else
+		{
+			meshDesc mDesc; dynamicMesh dynMDesc;
+			mDesc.FLDesc = &desc;
+			mDesc.vertexData = vertexData[i];
+			mDesc.indexData = indexData[i];
+			//mDesc.transMat = DirectX::XMFLOAT4X4(floatMat);
+			mDesc.vertexCount = meshHeader.vertices;
+			mDesc.indexCount = meshHeader.indexLength;
+
+			model->appendMesh(mDesc, dynMDesc);
+		}
 
 		model->hasSkeleton = meshHeader.skeleton;
-
-		model->appendMesh(mDesc);
 	}
 
 	//CREATE ZE MODEL PLS

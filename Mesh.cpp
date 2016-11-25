@@ -4,12 +4,18 @@ Mesh::Mesh()
 {
 }
 
-Mesh::Mesh(meshDesc &mDesc)
+Mesh::Mesh(meshDesc &mDesc, dynamicMesh &dMDesc)
 {
-	this->vertexData = mDesc.vertexData;
+	/*this->vertexData = mDesc.vertexData;
 	this->indexData = mDesc.indexData;
 	this->vertexCount = mDesc.vertexCount;
-	this->indexCount = mDesc.indexCount;
+	this->indexCount = mDesc.indexCount;*/
+
+	this->skelVertexData = dMDesc.skelVertexData;
+	this->indexData = dMDesc.indexData;
+	this->vertexCount = dMDesc.vertexCount;
+	this->indexCount = dMDesc.indexCount;
+
 	//this->transMat = mDesc.transMat;
 
 	//for (int i = 0; i < this->vertexCount; i++)
@@ -31,8 +37,8 @@ Mesh::Mesh(meshDesc &mDesc)
 
 
 
-	this->gDevice = mDesc.FLDesc->gDevice;
-	this->gDeviceContext = mDesc.FLDesc->gDeviceContext;
+	this->gDevice = dMDesc.FLDesc->gDevice;
+	this->gDeviceContext = dMDesc.FLDesc->gDeviceContext;
 	this->vertexBuffer = nullptr;
 
 	this->initBuffers();
@@ -53,7 +59,8 @@ void Mesh::initBuffers()
 
 
 	D3D11_SUBRESOURCE_DATA vData;
-	vData.pSysMem = this->vertexData;
+	//vData.pSysMem = this->vertexData;
+	vData.pSysMem = this->skelVertexData;
 
 	//create vertexbuffer
 	result = gDevice->CreateBuffer(&desc, &vData, &this->vertexBuffer);
@@ -88,7 +95,8 @@ Mesh::~Mesh()
 
 void Mesh::clear()
 {
-	delete this->vertexData;
+	//delete this->vertexData;
+	delete this->skelVertexData;
 	delete this->indexData;
 }
 

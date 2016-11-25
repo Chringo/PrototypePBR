@@ -17,8 +17,6 @@ private:
 
 	worldMat wm;
 
-	
-
 	DirectX::XMMATRIX worldMatrix, rotation, scale, translation;
 	std::vector<Vertex1>vertexData1;
 
@@ -33,7 +31,7 @@ public:
 	Model(ID3D11Device* gDevice);
 	~Model();
 
-	void appendMesh(meshDesc & mDesc);
+	void appendMesh(meshDesc & mDesc, dynamicMesh & dmDesc);
 	void update(ID3D11DeviceContext* gDeviceContext);
 
 	unsigned int getMeshVertexCount(int meshIndex) const;
