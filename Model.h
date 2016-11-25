@@ -48,6 +48,20 @@ public:
 	//initialize
 
 	bool hasSkeleton;
+
 	std::vector<JointHeader> jointList;
+
+	struct AnimationPerJoint
+	{
+		std::vector<KeyframeHeader> keyframes;
+	};
+
+	struct tempJointStruct
+	{
+		std::vector<AnimationPerJoint> animationData;
+		std::vector<AnimationStateHeader> animationCount;
+	};
+
+	std::vector<tempJointStruct> tempAnimations;
 };
 

@@ -62,22 +62,26 @@ void FileLoader::loadFile(char * filePath) //creates a renderable model from a B
 		if (meshHeader.skeleton == true)
 		{
 			model->jointList.resize(meshHeader.jointCount);
+			model->tempAnimations.resize(meshHeader.jointCount);
+
 			infile.read((char*)model->jointList.data(), sizeof(JointHeader) * meshHeader.jointCount);
-			const int jointCount = model->jointList.size();
 
-			for (int jointIndex = 0; jointIndex < jointCount; jointIndex++)
+			for (int jointIndex = 0; jointIndex < meshHeader.jointCount; jointIndex++)
 			{
-				const int animStateCount = model->jointList[jointIndex].animStateCount;
-				model->jointList[jointIndex].animationStates.resize(animStateCount);
+				const int animationCount = model->jointList[jointIndex].animStateCount;
 
-				infile.read((char*)model->jointList[jointIndex].animationStates.data(), sizeof(AnimationStateHeader) * animStateCount);
+				model->tempAnimations[jointIndex].animationCount.resize(animationCount);
+				model->tempAnimations[jointIndex].animationData.resize(animationCount);
 
-				for (int animIndex = 0; animIndex < animStateCount; animIndex++)
+				infile.read((char*)model->tempAnimations[jointIndex].animationCount.data(), sizeof(AnimationStateHeader) * animationCount);
+
+				for (int animIndex = 0; animIndex < animationCount; animIndex++)
 				{
-					const int keyFrameCount = model->jointList[jointIndex].animationStates[animIndex].keyFrameCount;
-					model->jointList[jointIndex].animationStates[animIndex].keyFrames.resize(keyFrameCount);
+					const int keyframeCount = model->tempAnimations[jointIndex].animationCount[animIndex].keyFrameCount;
 
-					infile.read((char*)model->jointList[jointIndex].animationStates[animIndex].keyFrames.data(), sizeof(KeyframeHeader) * keyFrameCount);
+					model->tempAnimations[jointIndex].animationData[animIndex].keyframes.resize(keyframeCount);
+					
+					infile.read((char*)model->tempAnimations[jointIndex].animationData[animIndex].keyframes.data(), sizeof(KeyframeHeader) * keyframeCount);
 				}
 			}
 		}

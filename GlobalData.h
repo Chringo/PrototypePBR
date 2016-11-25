@@ -36,7 +36,7 @@ struct Vertex2
 struct MainHeader
 {
 	unsigned int meshes;
-	unsigned int numOfMats;
+	//unsigned int numOfMats;
 };
 
 struct MeshHeader
@@ -87,7 +87,6 @@ struct KeyframeHeader
 struct AnimationStateHeader
 {
 	unsigned int keyFrameCount;
-	std::vector<KeyframeHeader> keyFrames;
 };
 
 struct JointHeader
@@ -95,8 +94,8 @@ struct JointHeader
 	float bindPose[16];
 	int jointIndex;
 	int parentIndex;
+
 	unsigned int animStateCount;
-	std::vector<AnimationStateHeader> animationStates;
 };
 
 struct meshDesc
